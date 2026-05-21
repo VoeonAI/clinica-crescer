@@ -39,7 +39,7 @@ export const authService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return data as Profile;
   },
 
   async createInvite(email: string, role: 'master' | 'editor' | 'viewer', fullName: string) {
@@ -47,39 +47,40 @@ export const authService = {
     const { data: { user }, error: authError } = await supabase.auth.signUp({
       email,
       password: Math.random().toString(36).slice(-8), // Senha temporária
+      options: {
+        data: {
+          full_name: fullName,
+          role: role,
+        },
+      },
     });
 
     if (authError) throw authError;
 
     if (user) {
-      // Cria o perfil na tabela profiles
-      const { data, error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: user.id,
-          email,
-          full_name: fullName,
-          role,
-        })
-        .select()
-        .single();
-
-      if (profileError) throw profileError;
-      return data;
+      // O perfil será criado automaticamente pelo trigger
+      return {
+        id: user.id,
+        email,
+        full_name: fullName,
+        role,
+      };
     }
 
     throw new Error('Failed to create user');
   },
 
   async delete(id: string) {
-    // Precisa ser feito via função admin, pois delete na tabela profiles
-    // não remove do auth.users automaticamente
-    // Por enquanto, apenas marcamos como inativo ou removemos o profile
-    const { error } = await supabase
+    // Remove o profile da tabela pública
+    const { error: profileError } = await supabase
       .from('profiles')
       .delete()
       .eq('id', id);
 
-    if (error) throw error;
+    if (profileError) throw profileError;
+
+    // Em produção, você precisaria usar a API Admin do Supabase para deletar
+    // o usuário do auth.users, pois isso não pode ser feito via client SDK
+    console.warn('Profile deletado. Para remover completamente do auth, use a API Admin do Supabase.');
   },
 };
