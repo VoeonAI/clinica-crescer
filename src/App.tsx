@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 
 // Páginas Públicas
 import Sobre from "./pages/public/Sobre";
+import Equipe from "./pages/public/Equipe";
 import PrecisaDeAjuda from "./pages/public/PrecisaDeAjuda";
 import SinaisAlerta from "./pages/public/SinaisAlerta";
 import QuandoProcurarAvaliacao from "./pages/public/QuandoProcurarAvaliacao";
@@ -45,6 +46,7 @@ const App = () => (
             <Route path="/" element={<PublicLayout />}>
               <Route index element={<Index />} />
               <Route path="sobre" element={<Sobre />} />
+              <Route path="equipe" element={<Equipe />} />
               <Route path="como-saber-se-meu-filho-precisa-de-ajuda" element={<PrecisaDeAjuda />} />
               <Route path="sinais-de-alerta-no-desenvolvimento-infantil" element={<SinaisAlerta />} />
               <Route path="quando-procurar-avaliacao" element={<QuandoProcurarAvaliacao />} />

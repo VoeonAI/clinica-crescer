@@ -1,16 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { blogService, BlogPost, BlogCategory } from "@/services/blogService";
+import { blogService, BlogPost } from "@/services/blogService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { showSuccess, showError } from "@/utils/toast";
 import { ArrowLeft, Save } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import SimpleHTMLEditor from "@/components/SimpleHTMLEditor";
 
 const AdminBlogNew = () => {
   const navigate = useNavigate();
@@ -23,46 +23,30 @@ const AdminBlogNew = () => {
     slug: "",
     excerpt: "",
     content: "",
-    cover_image_url: "",
-    category_id: "",
-    status: "draft" as "draft" | "published",
+    cover_image: "",
+    published: false,
     seo_title: "",
     seo_description: "",
   });
 
-  const [categories, setCategories] = useState<BlogCategory[]>([]);
   const [loading, setLoading] = useState(false);
-  const [loadingCategories, setLoadingCategories] = useState(true);
 
   useEffect(() => {
-    loadCategories();
     if (isEditing && id) {
       loadPost(id);
     }
   }, [id, isEditing]);
 
-  const loadCategories = async () => {
-    try {
-      const data = await blogService.getCategories();
-      setCategories(data);
-    } catch (error) {
-      showError("Erro ao carregar categorias");
-    } finally {
-      setLoadingCategories(false);
-    }
-  };
-
   const loadPost = async (postId: string) => {
     try {
-      const data = await blogService.getById(postId);
+      const data = await blogService.getPostById(postId);
       setFormData({
         title: data.title,
         slug: data.slug,
-        excerpt: data.excerpt,
-        content: data.content,
-        cover_image_url: data.cover_image_url || "",
-        category_id: data.category_id || "",
-        status: data.status,
+        excerpt: data.excerpt || "",
+        content: data.content || "",
+        cover_image: data.cover_image || "",
+        published: data.published,
         seo_title: data.seo_title || "",
         seo_description: data.seo_description || "",
       });
@@ -79,15 +63,14 @@ const AdminBlogNew = () => {
     try {
       const postData = {
         ...formData,
-        author_id: user?.id,
-        published_at: formData.status === "published" ? new Date().toISOString() : null,
+        published_at: formData.published ? new Date().toISOString() : null,
       };
 
       if (isEditing && id) {
-        await blogService.update(id, postData);
+        await blogService.updatePost(id, postData);
         showSuccess("Post atualizado com sucesso");
       } else {
-        await blogService.create(postData);
+        await blogService.createPost(postData);
         showSuccess("Post criado com sucesso");
       }
       navigate("/admin/blog");
@@ -167,52 +150,25 @@ const AdminBlogNew = () => {
               />
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="category">Categoria</Label>
-                {loadingCategories ? (
-                  <Input disabled value="Carregando..." />
-                ) : (
-                  <Select
-                    value={formData.category_id}
-                    onValueChange={(value) => setFormData({ ...formData, category_id: value })}
-                  >
-                    <SelectTrigger id="category">
-                      <SelectValue placeholder="Selecione uma categoria" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <div className="flex items-center space-x-2 h-10">
-                  <Switch
-                    id="status"
-                    checked={formData.status === "published"}
-                    onCheckedChange={(checked) =>
-                      setFormData({ ...formData, status: checked ? "published" : "draft" })
-                    }
-                  />
-                  <Label htmlFor="status" className="text-sm">
-                    {formData.status === "published" ? "Publicado" : "Rascunho"}
-                  </Label>
-                </div>
-              </div>
+            <div className="flex items-center space-x-2 h-10">
+              <Switch
+                id="published"
+                checked={formData.published}
+                onCheckedChange={(checked) =>
+                  setFormData({ ...formData, published: checked })
+                }
+              />
+              <Label htmlFor="published" className="text-sm">
+                {formData.published ? "Publicado" : "Rascunho"}
+              </Label>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="cover">URL da Imagem de Capa</Label>
               <Input
                 id="cover"
-                value={formData.cover_image_url}
-                onChange={(e) => setFormData({ ...formData, cover_image_url: e.target.value })}
+                value={formData.cover_image}
+                onChange={(e) => setFormData({ ...formData, cover_image: e.target.value })}
                 placeholder="https://..."
               />
             </div>
@@ -224,20 +180,12 @@ const AdminBlogNew = () => {
             <CardTitle>Conteúdo</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="content">Conteúdo *</Label>
-              <Textarea
-                id="content"
-                value={formData.content}
-                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                rows={15}
-                className="font-mono text-sm"
-                required
-              />
-              <p className="text-xs text-muted-foreground">
-                Use HTML para formatação do conteúdo.
-              </p>
-            </div>
+            <SimpleHTMLEditor
+              value={formData.content}
+              onChange={(value) => setFormData({ ...formData, content: value })}
+              placeholder="Comece a escrever seu artigo..."
+              className="min-h-[500px]"
+            />
           </CardContent>
         </Card>
 

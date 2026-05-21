@@ -9,6 +9,7 @@ const PublicLayout: React.FC = () => {
   const navItems = [
     { path: '/', label: 'Início' },
     { path: '/sobre', label: 'Sobre' },
+    { path: '/equipe', label: 'Equipe' },
     { path: '/como-saber-se-meu-filho-precisa-de-ajuda', label: 'Precisa de Ajuda?' },
     { path: '/avaliacao-neuropsicologica', label: 'Avaliação' },
     { path: '/terapia-aba', label: 'Terapia ABA' },

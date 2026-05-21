@@ -4,7 +4,7 @@ import { blogService, BlogPost } from "@/services/blogService";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, Eye } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, EyeOff } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import {
   AlertDialog,
@@ -17,6 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Switch } from "@/components/ui/switch";
 
 const AdminBlog = () => {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ const AdminBlog = () => {
 
   const loadPosts = async () => {
     try {
-      const data = await blogService.getAll();
+      const data = await blogService.getAdminPosts();
       setPosts(data);
     } catch (error) {
       showError("Erro ao carregar posts");
@@ -40,7 +41,7 @@ const AdminBlog = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      await blogService.delete(id);
+      await blogService.deletePost(id);
       showSuccess("Post excluído com sucesso");
       loadPosts();
     } catch (error) {
@@ -48,8 +49,18 @@ const AdminBlog = () => {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    if (status === "published") {
+  const handleTogglePublish = async (id: string, currentStatus: boolean) => {
+    try {
+      await blogService.togglePublishPost(id, !currentStatus);
+      showSuccess(currentStatus ? "Post despublicado" : "Post publicado");
+      loadPosts();
+    } catch (error) {
+      showError("Erro ao alterar status");
+    }
+  };
+
+  const getStatusBadge = (status: boolean) => {
+    if (status) {
       return <Badge className="bg-green-100 text-green-800">Publicado</Badge>;
     }
     return <Badge variant="secondary">Rascunho</Badge>;
@@ -85,16 +96,13 @@ const AdminBlog = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="font-semibold text-lg">{post.title}</h3>
-                      {getStatusBadge(post.status)}
+                      {getStatusBadge(post.published)}
                     </div>
                     <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
                       {post.excerpt}
                     </p>
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span>Categoria: {post.blog_categories?.name || "-"}</span>
-                      <span>
-                        Autor: {post.profiles?.full_name || "-"}
-                      </span>
+                      <span>Slug: {post.slug}</span>
                       {post.published_at && (
                         <span>
                           Publicado em:{" "}
@@ -103,26 +111,33 @@ const AdminBlog = () => {
                       )}
                     </div>
                   </div>
-                  <div className="flex gap-2 ml-4">
-                    {post.status === "published" && (
+                  <div className="flex gap-2 ml-4 items-center">
+                    {post.published && (
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => window.open(`/blog/${post.slug}`, "_blank")}
+                        title="Ver no site"
                       >
                         <Eye className="w-4 h-4" />
                       </Button>
                     )}
+                    <Switch
+                      checked={post.published}
+                      onCheckedChange={() => handleTogglePublish(post.id, post.published)}
+                      title={post.published ? "Despublicar" : "Publicar"}
+                    />
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => navigate(`/admin/blog/${post.id}/edit`)}
+                      title="Editar"
                     >
                       <Edit className="w-4 h-4" />
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" title="Excluir">
                           <Trash2 className="w-4 h-4 text-destructive" />
                         </Button>
                       </AlertDialogTrigger>
