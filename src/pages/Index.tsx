@@ -1,4 +1,6 @@
 import { PublicPage } from "@/components/PublicPage";
+import { SEOHead } from "@/components/SEOHead";
+import { MedicalClinicSchema, FAQSchema } from "@/components/Schemas";
 import { Calendar, CheckCircle2, ArrowRight, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
