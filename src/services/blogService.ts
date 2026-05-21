@@ -4,85 +4,55 @@ export type BlogPost = {
   id: string;
   title: string;
   slug: string;
-  excerpt: string;
-  content: string;
-  cover_image_url?: string;
-  category_id?: string;
-  author_id?: string;
-  status: 'draft' | 'published';
+  excerpt?: string;
+  content?: string;
+  cover_image?: string;
+  published: boolean;
   seo_title?: string;
   seo_description?: string;
-  published_at?: string;
   created_at: string;
   updated_at: string;
-  blog_categories?: {
-    name: string;
-    slug: string;
-  };
-  profiles?: {
-    full_name: string;
-  };
+  published_at?: string;
 };
 
-export type BlogCategory = {
-  id: string;
-  name: string;
-  slug: string;
-  created_at: string;
-};
+export type CreatePostData = Omit<BlogPost, 'id' | 'created_at' | 'updated_at' | 'published_at'>;
+export type UpdatePostData = Partial<CreatePostData>;
 
 export const blogService = {
-  async getAllPublished() {
+  async getPublishedPosts(): Promise<BlogPost[]> {
     const { data, error } = await supabase
       .from('blog_posts')
-      .select(`
-        *,
-        blog_categories(name, slug),
-        profiles(full_name)
-      `)
-      .eq('status', 'published')
-      .order('published_at', { ascending: false });
+      .select('*')
+      .eq('published', true)
+      .order('published_at', { ascending: false, nullsFirst: false });
 
     if (error) throw error;
-    return data as BlogPost[];
+    return data || [];
   },
 
-  async getBySlug(slug: string) {
+  async getPostBySlug(slug: string): Promise<BlogPost | null> {
     const { data, error } = await supabase
       .from('blog_posts')
-      .select(`
-        *,
-        blog_categories(name, slug),
-        profiles(full_name)
-      `)
+      .select('*')
       .eq('slug', slug)
-      .eq('status', 'published')
+      .eq('published', true)
       .single();
 
     if (error) throw error;
-    return data as BlogPost;
+    return data;
   },
 
-  async getAll(onlyPublished = false) {
-    let query = supabase
+  async getAdminPosts(): Promise<BlogPost[]> {
+    const { data, error } = await supabase
       .from('blog_posts')
-      .select(`
-        *,
-        blog_categories(name, slug),
-        profiles(full_name)
-      `)
+      .select('*')
       .order('created_at', { ascending: false });
 
-    if (onlyPublished) {
-      query = query.eq('status', 'published');
-    }
-
-    const { data, error } = await query;
     if (error) throw error;
-    return data as BlogPost[];
+    return data || [];
   },
 
-  async getById(id: string) {
+  async getPostById(id: string): Promise<BlogPost | null> {
     const { data, error } = await supabase
       .from('blog_posts')
       .select('*')
@@ -90,33 +60,33 @@ export const blogService = {
       .single();
 
     if (error) throw error;
-    return data as BlogPost;
+    return data;
   },
 
-  async create(post: Partial<BlogPost>) {
-    const { data, error } = await supabase
+  async createPost(data: CreatePostData): Promise<BlogPost> {
+    const { data: newPost, error } = await supabase
       .from('blog_posts')
-      .insert(post)
+      .insert(data)
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    return newPost;
   },
 
-  async update(id: string, post: Partial<BlogPost>) {
-    const { data, error } = await supabase
+  async updatePost(id: string, data: UpdatePostData): Promise<BlogPost> {
+    const { data: updatedPost, error } = await supabase
       .from('blog_posts')
-      .update(post)
+      .update(data)
       .eq('id', id)
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    return updatedPost;
   },
 
-  async delete(id: string) {
+  async deletePost(id: string): Promise<void> {
     const { error } = await supabase
       .from('blog_posts')
       .delete()
@@ -125,45 +95,7 @@ export const blogService = {
     if (error) throw error;
   },
 
-  async getCategories() {
-    const { data, error } = await supabase
-      .from('blog_categories')
-      .select('*')
-      .order('name');
-
-    if (error) throw error;
-    return data as BlogCategory[];
-  },
-
-  async createCategory(category: Partial<BlogCategory>) {
-    const { data, error } = await supabase
-      .from('blog_categories')
-      .insert(category)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  async updateCategory(id: string, category: Partial<BlogCategory>) {
-    const { data, error } = await supabase
-      .from('blog_categories')
-      .update(category)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  async deleteCategory(id: string) {
-    const { error } = await supabase
-      .from('blog_categories')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
+  async togglePublishPost(id: string, published: boolean): Promise<BlogPost> {
+    return this.updatePost(id, { published });
   },
 };

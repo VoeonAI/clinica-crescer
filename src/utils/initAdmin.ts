@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabaseClient';
 
 /**
  * Esta função deve ser executada apenas uma vez para criar o primeiro usuário master.
- * Execute no console do navegador após autenticar-se no Supabase.
+ * Execute no console do navegador.
  */
 export async function createInitialMasterUser(email: string, password: string, fullName: string) {
   try {
@@ -50,7 +50,7 @@ export async function createInitialMasterUser(email: string, password: string, f
  *    import { createInitialMasterUser } from '/src/utils/initAdmin.ts';
  * 
  * 2. Execute a função com seus dados:
- *    createInitialMasterUser('seu@email.com', 'sua-senha', 'Seu Nome Completo');
+ *    await createInitialMasterUser('seu@email.com', 'sua-senha', 'Seu Nome Completo');
  * 
  * 3. Verifique seu email para confirmar a conta
  * 4. Faça login em /admin/login

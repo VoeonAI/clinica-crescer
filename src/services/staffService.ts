@@ -3,8 +3,8 @@ import { supabase } from '@/lib/supabaseClient';
 export type StaffMember = {
   id: string;
   name: string;
-  role_title: string;
-  bio: string;
+  role_title?: string;
+  bio?: string;
   photo_url?: string;
   specialties?: string[];
   display_order: number;
@@ -13,8 +13,11 @@ export type StaffMember = {
   updated_at: string;
 };
 
+export type CreateStaffData = Omit<StaffMember, 'id' | 'created_at' | 'updated_at'>;
+export type UpdateStaffData = Partial<CreateStaffData>;
+
 export const staffService = {
-  async getAllActive() {
+  async getActiveStaff(): Promise<StaffMember[]> {
     const { data, error } = await supabase
       .from('staff_members')
       .select('*')
@@ -22,20 +25,20 @@ export const staffService = {
       .order('display_order', { ascending: true });
 
     if (error) throw error;
-    return data as StaffMember[];
+    return data || [];
   },
 
-  async getAll() {
+  async getAdminStaff(): Promise<StaffMember[]> {
     const { data, error } = await supabase
       .from('staff_members')
       .select('*')
       .order('display_order', { ascending: true });
 
     if (error) throw error;
-    return data as StaffMember[];
+    return data || [];
   },
 
-  async getById(id: string) {
+  async getStaffById(id: string): Promise<StaffMember | null> {
     const { data, error } = await supabase
       .from('staff_members')
       .select('*')
@@ -43,33 +46,33 @@ export const staffService = {
       .single();
 
     if (error) throw error;
-    return data as StaffMember;
+    return data;
   },
 
-  async create(member: Partial<StaffMember>) {
-    const { data, error } = await supabase
+  async createStaffMember(data: CreateStaffData): Promise<StaffMember> {
+    const { data: newMember, error } = await supabase
       .from('staff_members')
-      .insert(member)
+      .insert(data)
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    return newMember;
   },
 
-  async update(id: string, member: Partial<StaffMember>) {
-    const { data, error } = await supabase
+  async updateStaffMember(id: string, data: UpdateStaffData): Promise<StaffMember> {
+    const { data: updatedMember, error } = await supabase
       .from('staff_members')
-      .update(member)
+      .update(data)
       .eq('id', id)
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    return updatedMember;
   },
 
-  async delete(id: string) {
+  async deleteStaffMember(id: string): Promise<void> {
     const { error } = await supabase
       .from('staff_members')
       .delete()
@@ -78,7 +81,7 @@ export const staffService = {
     if (error) throw error;
   },
 
-  async updateOrder(updates: { id: string; display_order: number }[]) {
+  async updateDisplayOrder(updates: { id: string; display_order: number }[]): Promise<void> {
     const promises = updates.map(({ id, display_order }) =>
       supabase
         .from('staff_members')

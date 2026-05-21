@@ -2,14 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
 import { showSuccess, showError } from '@/utils/toast';
-
-interface Profile {
-  id: string;
-  email: string;
-  full_name: string;
-  role: 'master' | 'editor' | 'viewer';
-  created_at: string;
-}
+import { profileService, Profile } from '@/services/profileService';
 
 interface AuthContextType {
   user: User | null;
@@ -35,7 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
+        fetchProfile();
       }
       setLoading(false);
     });
@@ -47,7 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        await fetchProfile(session.user.id);
+        await fetchProfile();
       } else {
         setProfile(null);
       }
@@ -57,15 +50,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async () => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) throw error;
+      const data = await profileService.getMyProfile();
       setProfile(data);
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -98,9 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const refreshProfile = async () => {
-    if (user) {
-      await fetchProfile(user.id);
-    }
+    await fetchProfile();
   };
 
   return (

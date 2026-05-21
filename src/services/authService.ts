@@ -1,48 +1,10 @@
 import { supabase } from '@/lib/supabaseClient';
+import { profileService, Profile } from './profileService';
 
-export type Profile = {
-  id: string;
-  email: string;
-  full_name: string;
-  role: 'master' | 'editor' | 'viewer';
-  created_at: string;
-};
+export type Role = 'master' | 'editor' | 'viewer';
 
 export const authService = {
-  async getProfiles() {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data as Profile[];
-  },
-
-  async getById(id: string) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error) throw error;
-    return data as Profile;
-  },
-
-  async update(id: string, profile: Partial<Profile>) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .update(profile)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data as Profile;
-  },
-
-  async createInvite(email: string, role: 'master' | 'editor' | 'viewer', fullName: string) {
+  async createInvite(email: string, role: Role, fullName: string) {
     // Cria o usuário no Supabase Auth
     const { data: { user }, error: authError } = await supabase.auth.signUp({
       email,
@@ -70,7 +32,7 @@ export const authService = {
     throw new Error('Failed to create user');
   },
 
-  async delete(id: string) {
+  async deleteUser(id: string) {
     // Remove o profile da tabela pública
     const { error: profileError } = await supabase
       .from('profiles')
@@ -82,5 +44,13 @@ export const authService = {
     // Em produção, você precisaria usar a API Admin do Supabase para deletar
     // o usuário do auth.users, pois isso não pode ser feito via client SDK
     console.warn('Profile deletado. Para remover completamente do auth, use a API Admin do Supabase.');
+  },
+
+  async getAllProfiles(): Promise<Profile[]> {
+    return profileService.getAllProfiles();
+  },
+
+  async updateRole(userId: string, role: Role): Promise<Profile> {
+    return profileService.updateUserRole(userId, role);
   },
 };
