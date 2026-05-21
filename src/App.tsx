@@ -28,6 +28,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminBlog from "./pages/admin/AdminBlog";
 import AdminBlogNew from "./pages/admin/AdminBlogNew";
 import AdminEquipe from "./pages/admin/AdminEquipe";
+import AdminEquipeNew from "./pages/admin/AdminEquipeNew";
 import AdminUsuarios from "./pages/admin/AdminUsuarios";
 
 const queryClient = new QueryClient();
@@ -68,7 +69,10 @@ const App = () => (
               <Route index element={<AdminDashboard />} />
               <Route path="blog" element={<AdminBlog />} />
               <Route path="blog/novo" element={<AdminBlogNew />} />
+              <Route path="blog/:id/edit" element={<AdminBlogNew />} />
               <Route path="equipe" element={<AdminEquipe />} />
+              <Route path="equipe/novo" element={<AdminEquipeNew />} />
+              <Route path="equipe/:id/edit" element={<AdminEquipeNew />} />
               <Route path="usuarios" element={<AdminUsuarios />} />
             </Route>
 
