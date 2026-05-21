@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { blogService } from "@/services/blogService";
 import { staffService } from "@/services/staffService";
 import { authService } from "@/services/authService";
-import { FileText, Users, UserCog, TrendingUp } from "lucide-react";
+import { FileText, Users, UserCog } from "lucide-react";
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
@@ -21,14 +21,14 @@ const AdminDashboard = () => {
   const loadStats = async () => {
     try {
       const [posts, staff, users] = await Promise.all([
-        blogService.getAll(),
-        staffService.getAll(),
+        blogService.getAdminPosts(),
+        staffService.getAdminStaff(),
         authService.getProfiles(),
       ]);
 
       setStats({
         posts: posts.length,
-        publishedPosts: posts.filter((p) => p.status === "published").length,
+        publishedPosts: posts.filter((p) => p.published).length,
         staff: staff.length,
         activeStaff: staff.filter((s) => s.is_active).length,
         users: users.length,

@@ -1,7 +1,6 @@
 import { PublicPage } from "@/components/PublicPage";
-import { blogService } from "@/services/blogService";
+import { blogService, BlogPost } from "@/services/blogService";
 import { useEffect, useState } from "react";
-import { BlogPost } from "@/services/blogService";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, User } from "lucide-react";
 
@@ -15,7 +14,7 @@ const Blog = () => {
 
   const loadPosts = async () => {
     try {
-      const data = await blogService.getAllPublished();
+      const data = await blogService.getPublishedPosts();
       setPosts(data);
     } catch (error) {
       console.error('Error loading posts:', error);
@@ -49,17 +48,12 @@ const Blog = () => {
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {posts.map((post) => (
             <article key={post.id} className="border rounded-lg p-6 bg-card hover:shadow-lg transition-shadow">
-              {post.cover_image_url && (
+              {post.cover_image && (
                 <img
-                  src={post.cover_image_url}
+                  src={post.cover_image}
                   alt={post.title}
                   className="h-40 w-full object-cover rounded mb-4"
                 />
-              )}
-              {post.blog_categories && (
-                <span className="text-xs font-medium text-primary mb-2 block">
-                  {post.blog_categories.name}
-                </span>
               )}
               <h2 className="text-xl font-bold mb-3 text-primary">
                 <a href={`/blog/${post.slug}`} className="hover:underline">
@@ -76,12 +70,10 @@ const Blog = () => {
                     <span>{new Date(post.published_at).toLocaleDateString('pt-BR')}</span>
                   </div>
                 )}
-                {post.profiles && (
-                  <div className="flex items-center gap-1">
-                    <User className="w-3 h-3" />
-                    <span>{post.profiles.full_name}</span>
-                  </div>
-                )}
+                <div className="flex items-center gap-1">
+                  <User className="w-3 h-3" />
+                  <span>Clínica Crescer</span>
+                </div>
               </div>
             </article>
           ))}

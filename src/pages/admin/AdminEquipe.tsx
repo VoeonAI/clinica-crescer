@@ -29,7 +29,7 @@ const AdminEquipe = () => {
 
   const loadStaff = async () => {
     try {
-      const data = await staffService.getAll();
+      const data = await staffService.getAdminStaff();
       setStaff(data);
     } catch (error) {
       showError("Erro ao carregar equipe");
@@ -40,7 +40,7 @@ const AdminEquipe = () => {
 
   const handleToggleActive = async (member: StaffMember) => {
     try {
-      await staffService.update(member.id, { is_active: !member.is_active });
+      await staffService.updateStaffMember(member.id, { is_active: !member.is_active });
       showSuccess(member.is_active ? "Membro desativado" : "Membro ativado");
       loadStaff();
     } catch (error) {
@@ -50,7 +50,7 @@ const AdminEquipe = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      await staffService.delete(id);
+      await staffService.deleteStaffMember(id);
       showSuccess("Membro excluído com sucesso");
       loadStaff();
     } catch (error) {

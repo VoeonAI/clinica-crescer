@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { staffService, StaffMember } from "@/services/staffService";
+import { staffService } from "@/services/staffService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,11 +35,11 @@ const AdminEquipeNew = () => {
 
   const loadMember = async (memberId: string) => {
     try {
-      const data = await staffService.getById(memberId);
+      const data = await staffService.getStaffById(memberId);
       setFormData({
         name: data.name,
-        role_title: data.role_title,
-        bio: data.bio,
+        role_title: data.role_title || "",
+        bio: data.bio || "",
         photo_url: data.photo_url || "",
         specialties: data.specialties?.join(", ") || "",
         display_order: data.display_order,
@@ -67,10 +67,10 @@ const AdminEquipeNew = () => {
       };
 
       if (isEditing && id) {
-        await staffService.update(id, memberData);
+        await staffService.updateStaffMember(id, memberData);
         showSuccess("Membro atualizado com sucesso");
       } else {
-        await staffService.create(memberData);
+        await staffService.createStaffMember(memberData);
         showSuccess("Membro criado com sucesso");
       }
       navigate("/admin/equipe");
@@ -123,6 +123,11 @@ const AdminEquipeNew = () => {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="bio">Biografia</Label>
+              <Textarea
+                id="bio"
+                value={formData.bio}
+                onChange={(e) => setFormData({ ...<div className="space-y-2">
               <Label htmlFor="bio">Biografia</Label>
               <Textarea
                 id="bio"

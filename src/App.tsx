@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/contexts/AuthContext";
 import PublicLayout from "@/components/PublicLayout";
 import AdminLayout from "@/components/AdminLayout";
@@ -37,52 +38,54 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Rotas Públicas */}
-            <Route path="/" element={<PublicLayout />}>
-              <Route index element={<Index />} />
-              <Route path="sobre" element={<Sobre />} />
-              <Route path="equipe" element={<Equipe />} />
-              <Route path="como-saber-se-meu-filho-precisa-de-ajuda" element={<PrecisaDeAjuda />} />
-              <Route path="sinais-de-alerta-no-desenvolvimento-infantil" element={<SinaisAlerta />} />
-              <Route path="quando-procurar-avaliacao" element={<QuandoProcurarAvaliacao />} />
-              <Route path="avaliacao-neuropsicologica" element={<AvaliacaoNeuropsicologica />} />
-              <Route path="terapia-aba" element={<TerapiaABA />} />
-              <Route path="adolescentes" element={<Adolescentes />} />
-              <Route path="orientacao-parental" element={<OrientacaoParental />} />
-              <Route path="blog" element={<Blog />} />
-              <Route path="blog/:slug" element={<BlogPost />} />
-            </Route>
+      <HelmetProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Rotas Públicas */}
+              <Route path="/" element={<PublicLayout />}>
+                <Route index element={<Index />} />
+                <Route path="sobre" element={<Sobre />} />
+                <Route path="equipe" element={<Equipe />} />
+                <Route path="como-saber-se-meu-filho-precisa-de-ajuda" element={<PrecisaDeAjuda />} />
+                <Route path="sinais-de-alerta-no-desenvolvimento-infantil" element={<SinaisAlerta />} />
+                <Route path="quando-procurar-avaliacao" element={<QuandoProcurarAvaliacao />} />
+                <Route path="avaliacao-neuropsicologica" element={<AvaliacaoNeuropsicologica />} />
+                <Route path="terapia-aba" element={<TerapiaABA />} />
+                <Route path="adolescentes" element={<Adolescentes />} />
+                <Route path="orientacao-parental" element={<OrientacaoParental />} />
+                <Route path="blog" element={<Blog />} />
+                <Route path="blog/:slug" element={<BlogPost />} />
+              </Route>
 
-            {/* Rotas Admin */}
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route
-              path="/admin/*"
-              element={
-                <RouteGuard requireAuth={true}>
-                  <AdminLayout />
-                </RouteGuard>
-              }
-            >
-              <Route index element={<AdminDashboard />} />
-              <Route path="blog" element={<AdminBlog />} />
-              <Route path="blog/novo" element={<AdminBlogNew />} />
-              <Route path="blog/:id/edit" element={<AdminBlogNew />} />
-              <Route path="equipe" element={<AdminEquipe />} />
-              <Route path="equipe/novo" element={<AdminEquipeNew />} />
-              <Route path="equipe/:id/edit" element={<AdminEquipeNew />} />
-              <Route path="usuarios" element={<AdminUsuarios />} />
-            </Route>
+              {/* Rotas Admin */}
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route
+                path="/admin/*"
+                element={
+                  <RouteGuard requireAuth={true}>
+                    <AdminLayout />
+                  </RouteGuard>
+                }
+              >
+                <Route index element={<AdminDashboard />} />
+                <Route path="blog" element={<AdminBlog />} />
+                <Route path="blog/novo" element={<AdminBlogNew />} />
+                <Route path="blog/:id/edit" element={<AdminBlogNew />} />
+                <Route path="equipe" element={<AdminEquipe />} />
+                <Route path="equipe/novo" element={<AdminEquipeNew />} />
+                <Route path="equipe/:id/edit" element={<AdminEquipeNew />} />
+                <Route path="usuarios" element={<AdminUsuarios />} />
+              </Route>
 
-            {/* Catch-all */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+              {/* Catch-all */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </HelmetProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
