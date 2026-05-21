@@ -10,6 +10,7 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
   const { signIn } = useAuth();
@@ -19,12 +20,15 @@ const AdminLogin = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMessage("");
 
     try {
       await signIn(email, password);
+      // Redirect após login bem-sucedido
       navigate(from, { replace: true });
     } catch (error) {
-      // Error is already handled in signIn
+      // Erro já é tratado no signIn via toast
+      setErrorMessage("Credenciais inválidas. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -50,6 +54,7 @@ const AdminLogin = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={loading}
               />
             </div>
             <div className="space-y-2">
@@ -61,8 +66,14 @@ const AdminLogin = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={loading}
               />
             </div>
+            {errorMessage && (
+              <div className="text-sm text-destructive bg-destructive/10 p-3 rounded">
+                {errorMessage}
+              </div>
+            )}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Entrando..." : "Entrar"}
             </Button>

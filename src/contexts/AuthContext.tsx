@@ -29,8 +29,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile();
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     // Listen for auth changes
@@ -39,8 +40,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+      
       if (session?.user) {
-        await fetchProfile();
+        // Fetch profile em background, não bloqueia
+        fetchProfile().catch(() => {
+          // Se falhar, não trava o loading
+          console.error('Profile fetch failed, continuing without profile');
+        });
       } else {
         setProfile(null);
       }
@@ -56,6 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setProfile(data);
     } catch (error) {
       console.error('Error fetching profile:', error);
+      // Não throw - profile opcional não deve bloquear login
     }
   };
 
@@ -67,6 +74,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       if (error) throw error;
       showSuccess('Login realizado com sucesso!');
+      
+      // Aguarda um pouco para o profile ser carregado
+      await new Promise(resolve => setTimeout(resolve, 100));
     } catch (error: any) {
       showError(error.message || 'Erro ao fazer login');
       throw error;

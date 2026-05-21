@@ -17,7 +17,22 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({
   const { user, loading, profile } = useAuth();
   const location = useLocation();
 
-  if (loading) {
+  // Timeout de segurança para evitar loading infinito
+  const [loadingTimeout, setLoadingTimeout] = React.useState(false);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      if (loading) {
+        console.warn('RouteGuard loading timeout - forcing render');
+        setLoadingTimeout(true);
+      }
+    }, 5000); // 5 segundos de timeout
+
+    return () => clearTimeout(timer);
+  }, [loading]);
+
+  // Se timeout atingiu, mostra conteúdo mesmo que loading ainda seja true
+  if (loading && !loadingTimeout) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Skeleton className="h-8 w-32" />
@@ -31,7 +46,11 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({
   }
 
   // Se tem restrição de roles
-  if (allowedRoles && profile) {
+  if (allowedRoles) {
+    if (!profile) {
+      // Se profile ainda não carregou, permite acesso (não bloqueia login)
+      return <>{children}</>;
+    }
     if (!allowedRoles.includes(profile.role)) {
       return <Navigate to="/admin" replace />;
     }
