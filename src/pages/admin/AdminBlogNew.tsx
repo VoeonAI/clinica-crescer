@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { showSuccess, showError } from "@/utils/toast";
 import { ArrowLeft, Save } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import SimpleHTMLEditor from "@/components/SimpleHTMLEditor";
+import BlockEditor from "@/components/BlockEditor";
 
 const AdminBlogNew = () => {
   const navigate = useNavigate();
@@ -101,7 +101,7 @@ const AdminBlogNew = () => {
   };
 
   return (
-    <div className="max-w-4xl">
+    <div className="max-w-5xl">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/admin/blog")}>
@@ -180,11 +180,10 @@ const AdminBlogNew = () => {
             <CardTitle>Conteúdo</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <SimpleHTMLEditor
+            <BlockEditor
               value={formData.content}
               onChange={(value) => setFormData({ ...formData, content: value })}
-              placeholder="Comece a escrever seu artigo..."
-              className="min-h-[500px]"
+              placeholder="Comece a adicionar blocos de conteúdo..."
             />
           </CardContent>
         </Card>
