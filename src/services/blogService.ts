@@ -1,5 +1,7 @@
 import { supabase } from '@/lib/supabaseClient';
 
+const BLOG_BUCKET = 'blog-crescer';
+
 export type BlogPost = {
   id: string;
   title: string;
@@ -101,25 +103,51 @@ export const blogService = {
 
   async uploadBlogImage(file: File): Promise<string> {
     const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}.${fileExt}`;
-    const filePath = `${fileName}`;
+    const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+    const filePath = `posts/content/${fileName}`;
 
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('blog-images')
+    const { error: uploadError } = await supabase.storage
+      .from(BLOG_BUCKET)
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: false
       });
 
     if (uploadError) {
-      if (uploadError.message.includes('The resource was not found')) {
-        throw new Error('O bucket "blog-images" não existe. Crie-o no Supabase Storage para fazer upload de imagens.');
+      if (uploadError.message.includes('The resource was not found') || uploadError.message.includes('not found')) {
+        throw new Error('O bucket "blog-crescer" não foi encontrado no Supabase Storage. Verifique se o bucket foi criado corretamente.');
       }
-      throw uploadError;
+      throw new Error(uploadError.message || 'Erro ao enviar imagem.');
     }
 
     const { data: { publicUrl } } = supabase.storage
-      .from('blog-images')
+      .from(BLOG_BUCKET)
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  },
+
+  async uploadCoverImage(file: File): Promise<string> {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+    const filePath = `posts/covers/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(BLOG_BUCKET)
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (uploadError) {
+      if (uploadError.message.includes('The resource was not found') || uploadError.message.includes('not found')) {
+        throw new Error('O bucket "blog-crescer" não foi encontrado no Supabase Storage. Verifique se o bucket foi criado corretamente.');
+      }
+      throw new Error(uploadError.message || 'Erro ao enviar imagem de capa.');
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from(BLOG_BUCKET)
       .getPublicUrl(filePath);
 
     return publicUrl;

@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { showSuccess, showError } from "@/utils/toast";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Upload } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import BlockEditor from "@/components/BlockEditor";
 
@@ -30,6 +30,7 @@ const AdminBlogNew = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
 
   useEffect(() => {
     if (isEditing && id) {
@@ -100,6 +101,19 @@ const AdminBlogNew = () => {
     });
   };
 
+  const handleCoverUpload = async (file: File) => {
+    setUploadingCover(true);
+    try {
+      const imageUrl = await blogService.uploadCoverImage(file);
+      setFormData({ ...formData, cover_image: imageUrl });
+      showSuccess("Imagem de capa enviada com sucesso!");
+    } catch (error: any) {
+      showError(error.message || "Erro ao enviar imagem de capa");
+    } finally {
+      setUploadingCover(false);
+    }
+  };
+
   return (
     <div className="max-w-5xl">
       <div className="flex items-center justify-between mb-8">
@@ -162,16 +176,78 @@ const AdminBlogNew = () => {
                 {formData.published ? "Publicado" : "Rascunho"}
               </Label>
             </div>
+          </CardContent>
+        </Card>
 
-            <div className="space-y-2">
-              <Label htmlFor="cover">URL da Imagem de Capa</Label>
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Imagem de Capa</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="cover-upload">Upload de Imagem</Label>
+              <div className="flex gap-2 mt-2">
+                <Input
+                  id="cover-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    e.preventDefault();
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      handleCoverUpload(file);
+                    }
+                  }}
+                  className="flex-1"
+                  disabled={uploadingCover}
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={uploadingCover}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById("cover-upload")?.click();
+                  }}
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  {uploadingCover ? "Enviando..." : "Enviar"}
+                </Button>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="cover-url">OU URL da Imagem</Label>
               <Input
-                id="cover"
+                id="cover-url"
                 value={formData.cover_image}
                 onChange={(e) => setFormData({ ...formData, cover_image: e.target.value })}
                 placeholder="https://..."
               />
             </div>
+            {formData.cover_image && (
+              <div className="relative">
+                <img
+                  src={formData.cover_image}
+                  alt="Preview da capa"
+                  className="w-full max-h-64 object-cover rounded-lg border"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  className="absolute top-2 right-2"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setFormData({ ...formData, cover_image: "" });
+                  }}
+                >
+                  Remover
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
