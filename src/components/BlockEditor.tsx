@@ -204,14 +204,28 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
     setBlocks(blocks.filter(block => block.id !== id));
   };
 
+  // Função segura de mover bloco
   const moveBlock = (index: number, direction: 'up' | 'down') => {
-    const newBlocks = [...blocks];
     const newIndex = direction === 'up' ? index - 1 : index + 1;
-    
-    if (newIndex >= 0 && newIndex < newBlocks.length) {
-      [newBlocks[index], newBlocks[newIndex]] = [newBlocks[newBlocks], newBlocks[index]];
-      setBlocks(newBlocks);
+
+    // Impedir mover index 0 para cima ou último para baixo
+    if (newIndex < 0 || newIndex >= blocks.length) {
+      return;
     }
+
+    // Copiar array
+    const updated = [...blocks];
+    
+    // Swap seguro manual
+    const temp = updated[index];
+    updated[index] = updated[newIndex];
+    updated[newIndex] = temp;
+
+    // Filtrar para garantir que nenhum bloco undefined foi introduzido
+    const cleanBlocks = updated.filter(Boolean);
+
+    // Atualizar estado
+    setBlocks(cleanBlocks);
   };
 
   const handlePasteText = (text: string) => {
@@ -328,6 +342,11 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
   };
 
   const renderBlockEditor = (block: Block, index: number) => {
+    // Guard: Se o bloco for inválido, não renderiza nada
+    if (!block) {
+      return null;
+    }
+
     const isFirst = index === 0;
     const isLast = index === blocks.length - 1;
     const showLinkDialog = linkBlockIdRef.current === block.id;
@@ -655,6 +674,9 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
     return (
       <div className="blog-content">
         {blocks.map((block, index) => {
+          // Guard: Ignorar blocos inválidos no preview
+          if (!block) return null;
+
           switch (block.type) {
             case 'heading':
               return <h2 key={block.id}>{block.content}</h2>;
