@@ -19,13 +19,14 @@ import {
   Bold,
   Italic,
   Eye,
-  EyeOff
+  EyeOff,
+  Youtube
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { blogService } from '@/services/blogService';
 import { showSuccess, showError } from '@/utils/toast';
 
-export type BlockType = 'heading' | 'paragraph' | 'list' | 'image';
+export type BlockType = 'heading' | 'paragraph' | 'list' | 'image' | 'video';
 
 export interface Block {
   id: string;
@@ -33,6 +34,7 @@ export interface Block {
   content: string;
   altText?: string;
   imageUrl?: string;
+  videoUrl?: string;
   listType?: 'bulleted' | 'numbered';
 }
 
@@ -66,6 +68,22 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
       onChange(html);
     }
   }, [blocks]);
+
+  const extractYouTubeId = (url: string): string | null => {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+      /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/
+    ];
+    
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[match.length - 1] && match[match.length - 1].length === 11) {
+        return match[match.length - 1];
+      }
+    }
+    
+    return null;
+  };
 
   const parseHTMLToBlocks = (html: string) => {
     const tempDiv = document.createElement('div');
@@ -111,6 +129,17 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
           altText: (child as HTMLImageElement).alt || '',
           content: '',
         });
+      } else if (child.tagName === 'IFRAME') {
+        const iframe = child as HTMLIFrameElement;
+        const youtubeId = extractYouTubeId(iframe.src);
+        if (youtubeId) {
+          newBlocks.push({
+            id,
+            type: 'video',
+            videoUrl: `https://www.youtube.com/watch?v=${youtubeId}`,
+            content: '',
+          });
+        }
       }
     });
 
@@ -134,6 +163,14 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
           return block.imageUrl 
             ? `<img src="${escapeHtml(block.imageUrl)}" alt="${escapeHtml(block.altText || '')}" class="w-full rounded-lg my-4" />`
             : '';
+        case 'video':
+          if (block.videoUrl) {
+            const videoId = extractYouTubeId(block.videoUrl);
+            if (videoId) {
+              return `<div class="video-container my-6"><iframe src="https://www.youtube.com/embed/${videoId}" title="Vídeo do YouTube" loading="lazy" allowfullscreen></iframe></div>`;
+            }
+          }
+          return '';
         default:
           return '';
       }
@@ -172,7 +209,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
     const newIndex = direction === 'up' ? index - 1 : index + 1;
     
     if (newIndex >= 0 && newIndex < newBlocks.length) {
-      [newBlocks[index], newBlocks[newIndex]] = [newBlocks[newIndex], newBlocks[index]];
+      [newBlocks[index], newBlocks[newIndex]] = [newBlocks[newBlocks], newBlocks[index]];
       setBlocks(newBlocks);
     }
   };
@@ -188,7 +225,6 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
     setShowPreview(false);
   };
 
-  // Formatação por seleção no textarea
   const applyFormatToSelection = (blockId: string, tag: 'strong' | 'em' | 'a', href?: string) => {
     const textarea = textareaRefs.current[blockId];
     if (!textarea) return;
@@ -217,7 +253,6 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
     
     updateBlock(blockId, { content: newText });
     
-    // Restaurar foco após atualização
     setTimeout(() => {
       const textareaUpdated = textareaRefs.current[blockId];
       if (textareaUpdated) {
@@ -226,7 +261,6 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
     }, 0);
   };
 
-  // Aplicar formatação no bloco inteiro
   const applyFormatToWholeBlock = (blockId: string, tag: 'strong' | 'em') => {
     const block = blocks.find(b => b.id === blockId);
     if (!block || block.type !== 'paragraph') return;
@@ -234,7 +268,6 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
     const openTag = tag === 'strong' ? '<strong>' : '<em>';
     const closeTag = tag === 'strong' ? '</strong>' : '</em>';
     
-    // Remove tags existentes para evitar duplicação
     let cleanContent = block.content
       .replace(/<\/?strong>/g, '')
       .replace(/<\/?em>/g, '')
@@ -243,7 +276,6 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
     updateBlock(blockId, { content: `${openTag}${cleanContent}${closeTag}` });
   };
 
-  // Abrir diálogo de link
   const openLinkDialog = (blockId: string) => {
     const textarea = textareaRefs.current[blockId];
     if (!textarea) return;
@@ -263,7 +295,6 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
     }
   };
 
-  // Aplicar link
   const applyLink = () => {
     const url = linkUrlRef.current?.value.trim();
     const blockId = linkBlockIdRef.current;
@@ -286,7 +317,6 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
     linkBlockIdRef.current = null;
   };
 
-  // Upload de imagem
   const handleImageUpload = async (blockId: string, file: File) => {
     try {
       const imageUrl = await blogService.uploadBlogImage(file);
@@ -317,6 +347,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
               {block.type === 'paragraph' && 'Parágrafo'}
               {block.type === 'list' && `Lista (${block.listType === 'numbered' ? 'numerada' : 'marcadores'})`}
               {block.type === 'image' && 'Imagem'}
+              {block.type === 'video' && 'Vídeo YouTube'}
             </span>
             <div className="flex-1" />
             <Button
@@ -579,6 +610,34 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
               )}
             </div>
           )}
+
+          {block.type === 'video' && (
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor={`video-${block.id}`}>URL do YouTube *</Label>
+                <Input
+                  id={`video-${block.id}`}
+                  value={block.videoUrl || ''}
+                  onChange={(e) => updateBlock(block.id, { videoUrl: e.target.value })}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Formatos aceitos: youtube.com/watch?v=ID, youtu.be/ID
+                </p>
+              </div>
+              {block.videoUrl && extractYouTubeId(block.videoUrl) && (
+                <div className="aspect-video rounded-lg overflow-hidden border">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${extractYouTubeId(block.videoUrl)}`}
+                    title="Preview do vídeo"
+                    loading="lazy"
+                    allowFullScreen
+                    className="w-full h-full"
+                  />
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     );
@@ -594,18 +653,18 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
     }
 
     return (
-      <div className="prose prose-lg max-w-none">
+      <div className="blog-content">
         {blocks.map((block, index) => {
           switch (block.type) {
             case 'heading':
-              return <h2 key={block.id} className="text-2xl font-bold mb-4">{block.content}</h2>;
+              return <h2 key={block.id}>{block.content}</h2>;
             case 'paragraph':
-              return <p key={block.id} className="mb-4" dangerouslySetInnerHTML={{ __html: block.content }} />;
+              return <p key={block.id} dangerouslySetInnerHTML={{ __html: block.content }} />;
             case 'list':
               const items = block.content.split('\n').filter(item => item.trim());
               const ListTag = block.listType === 'numbered' ? 'ol' : 'ul';
               return (
-                <ListTag key={block.id} className={block.listType === 'numbered' ? 'list-decimal pl-6 mb-4 space-y-2' : 'list-disc pl-6 mb-4 space-y-2'}>
+                <ListTag key={block.id}>
                   {items.map((item, i) => <li key={i} dangerouslySetInnerHTML={{ __html: item }} />)}
                 </ListTag>
               );
@@ -615,9 +674,25 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
                   key={block.id}
                   src={block.imageUrl} 
                   alt={block.altText} 
-                  className="w-full rounded-lg my-6"
                 />
               ) : null;
+            case 'video':
+              if (block.videoUrl) {
+                const videoId = extractYouTubeId(block.videoUrl);
+                if (videoId) {
+                  return (
+                    <div key={block.id} className="video-container">
+                      <iframe
+                        src={`https://www.youtube.com/embed/${videoId}`}
+                        title="Vídeo do YouTube"
+                        loading="lazy"
+                        allowFullScreen
+                      />
+                    </div>
+                  );
+                }
+              }
+              return null;
             default:
               return null;
           }
@@ -668,7 +743,6 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
 
   return (
     <div className="border rounded-lg overflow-hidden bg-white">
-      {/* Header com botão de preview */}
       <div className="border-b bg-gray-50 p-4 flex items-center justify-between">
         <h3 className="font-semibold">Editor por Blocos</h3>
         <Button
@@ -700,7 +774,6 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
         </div>
       ) : (
         <div className="p-4">
-          {/* Botões para adicionar blocos */}
           <div className="flex flex-wrap gap-2 mb-6">
             <Button
               type="button"
@@ -756,6 +829,18 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
               size="sm"
               onClick={(e) => {
                 e.preventDefault();
+                addBlock('video');
+              }}
+            >
+              <Youtube className="w-4 h-4 mr-2" />
+              Vídeo YouTube
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
                 setShowPasteDialog(true);
               }}
             >
@@ -768,7 +853,6 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
             <PasteTextDialog onClose={() => setShowPasteDialog(false)} />
           )}
 
-          {/* Lista de blocos */}
           {blocks.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground border-2 border-dashed rounded-lg">
               <p className="mb-2">{placeholder || 'Nenhum bloco adicionado ainda.'}</p>
