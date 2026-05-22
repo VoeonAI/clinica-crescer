@@ -214,28 +214,40 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
             </span>
             <div className="flex-1" />
             <Button
+              type="button"
               variant="ghost"
               size="icon"
               className="h-7 w-7"
-              onClick={() => moveBlock(index, 'up')}
+              onClick={(e) => {
+                e.preventDefault();
+                moveBlock(index, 'up');
+              }}
               disabled={isFirst}
             >
               <ChevronUp className="w-4 h-4" />
             </Button>
             <Button
+              type="button"
               variant="ghost"
               size="icon"
               className="h-7 w-7"
-              onClick={() => moveBlock(index, 'down')}
+              onClick={(e) => {
+                e.preventDefault();
+                moveBlock(index, 'down');
+              }}
               disabled={isLast}
             >
               <ChevronDown className="w-4 h-4" />
             </Button>
             <Button
+              type="button"
               variant="ghost"
               size="icon"
               className="h-7 w-7 text-destructive"
-              onClick={() => deleteBlock(block.id)}
+              onClick={(e) => {
+                e.preventDefault();
+                deleteBlock(block.id);
+              }}
             >
               <Trash2 className="w-4 h-4" />
             </Button>
@@ -261,17 +273,25 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
               />
               <div className="flex gap-2">
                 <Button
+                  type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => formatParagraphSelection(block.id, 'strong', false)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    formatParagraphSelection(block.id, 'strong', false);
+                  }}
                 >
                   <Bold className="w-4 h-4 mr-2" />
                   Bloco Negrito
                 </Button>
                 <Button
+                  type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => formatParagraphSelection(block.id, 'em', false)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    formatParagraphSelection(block.id, 'em', false);
+                  }}
                 >
                   <Italic className="w-4 h-4 mr-2" />
                   Bloco Itálico
@@ -391,8 +411,14 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
             className="mb-4"
           />
           <div className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={onClose}>Cancelar</Button>
-            <Button onClick={handlePaste}>Adicionar</Button>
+            <Button type="button" variant="outline" onClick={(e) => {
+              e.preventDefault();
+              onClose();
+            }}>Cancelar</Button>
+            <Button type="button" onClick={(e) => {
+              e.preventDefault();
+              handlePaste();
+            }}>Adicionar</Button>
           </div>
         </CardContent>
       </Card>
@@ -407,9 +433,13 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
       <div className="border-b bg-gray-50 p-4 flex items-center justify-between">
         <h3 className="font-semibold">Editor por Blocos</h3>
         <Button
+          type="button"
           variant="outline"
           size="sm"
-          onClick={() => setShowPreview(!showPreview)}
+          onClick={(e) => {
+            e.preventDefault();
+            setShowPreview(!showPreview);
+          }}
         >
           {showPreview ? (
             <>
@@ -434,41 +464,61 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
           {/* Botões para adicionar blocos */}
           <div className="flex flex-wrap gap-2 mb-6">
             <Button
+              type="button"
               variant="outline"
               size="sm"
-              onClick={() => addBlock('heading')}
+              onClick={(e) => {
+                e.preventDefault();
+                addBlock('heading');
+              }}
             >
               <Type className="w-4 h-4 mr-2" />
               Título (H2)
             </Button>
             <Button
+              type="button"
               variant="outline"
               size="sm"
-              onClick={() => addBlock('paragraph')}
+              onClick={(e) => {
+                e.preventDefault();
+                addBlock('paragraph');
+              }}
             >
               <AlignLeft className="w-4 h-4 mr-2" />
               Parágrafo
             </Button>
             <Button
+              type="button"
               variant="outline"
               size="sm"
-              onClick={() => addBlock('list')}
+              onClick={(e) => {
+                e.preventDefault();
+                addBlock('list');
+              }}
             >
               <List className="w-4 h-4 mr-2" />
               Lista
             </Button>
             <Button
+              type="button"
               variant="outline"
               size="sm"
-              onClick={() => addBlock('image')}
+              onClick={(e) => {
+                e.preventDefault();
+                addBlock('image');
+              }}
             >
               <ImageIcon className="w-4 h-4 mr-2" />
               Imagem
             </Button>
             <Button
+              type="button"
               variant="outline"
               size="sm"
-              onClick={() => setShowPasteDialog(true)}
+              onClick={(e) => {
+                e.preventDefault();
+                setShowPasteDialog(true);
+              }}
             >
               <Clipboard className="w-4 h-4 mr-2" />
               Colar Texto
