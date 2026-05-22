@@ -56,7 +56,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
 
   // Parse HTML inicial para blocos
   useEffect(() => {
-    if (value && blocks.length === 0) {
+    if (value) {
       parseHTMLToBlocks(value);
     }
   }, [value]);
@@ -90,59 +90,87 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
     tempDiv.innerHTML = html;
     const newBlocks: Block[] = [];
 
-    Array.from(tempDiv.children).forEach((child, index) => {
-      const id = child.id || `block-${Date.now()}-${index}`;
-      
-      if (child.tagName === 'H2') {
-        newBlocks.push({
-          id,
-          type: 'heading',
-          content: child.textContent || '',
-        });
-      } else if (child.tagName === 'P') {
-        newBlocks.push({
-          id,
-          type: 'paragraph',
-          content: child.innerHTML || '',
-        });
-      } else if (child.tagName === 'UL') {
-        const items = Array.from(child.querySelectorAll('li')).map(li => li.innerHTML || li.textContent || '');
-        newBlocks.push({
-          id,
-          type: 'list',
-          content: items.join('\n'),
-          listType: 'bulleted',
-        });
-      } else if (child.tagName === 'OL') {
-        const items = Array.from(child.querySelectorAll('li')).map(li => li.innerHTML || li.textContent || '');
-        newBlocks.push({
-          id,
-          type: 'list',
-          content: items.join('\n'),
-          listType: 'numbered',
-        });
-      } else if (child.tagName === 'IMG') {
-        newBlocks.push({
-          id,
-          type: 'image',
-          imageUrl: (child as HTMLImageElement).src,
-          altText: (child as HTMLImageElement).alt || '',
-          content: '',
-        });
-      } else if (child.tagName === 'IFRAME') {
-        const iframe = child as HTMLIFrameElement;
-        const youtubeId = extractYouTubeId(iframe.src);
-        if (youtubeId) {
+    // Função auxiliar para processar filhos recursivamente
+    const processChildren = (element: Element) => {
+      Array.from(element.children).forEach((child, index) => {
+        const id = child.id || `block-${Date.now()}-${index}-${Math.random()}`;
+        
+        // Verificar se é uma div wrapper de vídeo
+        if (child.tagName === 'DIV' && child.classList.contains('video-container')) {
+          const iframe = child.querySelector('iframe');
+          if (iframe) {
+            const youtubeId = extractYouTubeId(iframe.src);
+            if (youtubeId) {
+              newBlocks.push({
+                id,
+                type: 'video',
+                videoUrl: `https://www.youtube.com/watch?v=${youtubeId}`,
+                content: '',
+              });
+              return; // Não processar filhos dessa div
+            }
+          }
+        }
+        
+        if (child.tagName === 'H2') {
           newBlocks.push({
             id,
-            type: 'video',
-            videoUrl: `https://www.youtube.com/watch?v=${youtubeId}`,
+            type: 'heading',
+            content: child.textContent || '',
+          });
+        } else if (child.tagName === 'P') {
+          newBlocks.push({
+            id,
+            type: 'paragraph',
+            content: child.innerHTML || '',
+          });
+        } else if (child.tagName === 'UL') {
+          const items = Array.from(child.querySelectorAll('li')).map(li => li.innerHTML || li.textContent || '');
+          newBlocks.push({
+            id,
+            type: 'list',
+            content: items.join('\n'),
+            listType: 'bulleted',
+          });
+        } else if (child.tagName === 'OL') {
+          const items = Array.from(child.querySelectorAll('li')).map(li => li.innerHTML || li.textContent || '');
+          newBlocks.push({
+            id,
+            type: 'list',
+            content: items.join('\n'),
+            listType: 'numbered',
+          });
+        } else if (child.tagName === 'IMG') {
+          newBlocks.push({
+            id,
+            type: 'image',
+            imageUrl: (child as HTMLImageElement).src,
+            altText: (child as HTMLImageElement).alt || '',
             content: '',
           });
+        } else if (child.tagName === 'IFRAME') {
+          const iframe = child as HTMLIFrameElement;
+          const youtubeId = extractYouTubeId(iframe.src);
+          if (youtubeId) {
+            newBlocks.push({
+              id,
+              type: 'video',
+              videoUrl: `https://www.youtube.com/watch?v=${youtubeId}`,
+              content: '',
+            });
+          }
         }
-      }
-    });
+        
+        // Processar filhos recursivamente para aninhamentos
+        if (child.children.length > 0) {
+          processChildren(child);
+        }
+      });
+    };
 
+    processChildren(tempDiv);
+
+    // Atualizar blocks se encontrou novos
     if (newBlocks.length > 0) {
       setBlocks(newBlocks);
     }
@@ -337,7 +365,17 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
       updateBlock(blockId, { imageUrl });
       showSuccess('Imagem enviada com sucesso!');
     } catch (error: any) {
-      showError(error.message || 'Erro ao enviar imagem');
+      console.error('Erro ao enviar imagem:', error);
+      // Mostrar erro mais amigável
+      const errorMsg = error.message || 'Erro ao enviar imagem';
+      
+      if (errorMsg.includes('bucket') || errorMsg.includes('storage')) {
+        showError('Erro de acesso ao Storage. Verifique se o bucket "blog-crescer" existe e as permissões estão configuradas.');
+      } else if (errorMsg.includes('policy') || errorMsg.includes('RLS')) {
+        showError('Erro de permissão. Verifique as políticas RLS do Supabase Storage.');
+      } else {
+        showError(errorMsg);
+      }
     }
   };
 
