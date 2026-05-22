@@ -8,11 +8,13 @@ import {
   ChevronUp, 
   ChevronDown, 
   Trash2, 
-  Plus, 
   Type, 
   AlignLeft, 
   List, 
+  ListOrdered,
   Image as ImageIcon,
+  Upload,
+  Link as LinkIcon,
   Clipboard,
   Bold,
   Italic,
@@ -20,6 +22,8 @@ import {
   EyeOff
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { blogService } from '@/services/blogService';
+import { showSuccess, showError } from '@/utils/toast';
 
 export type BlockType = 'heading' | 'paragraph' | 'list' | 'image';
 
@@ -29,6 +33,7 @@ export interface Block {
   content: string;
   altText?: string;
   imageUrl?: string;
+  listType?: 'bulleted' | 'numbered';
 }
 
 interface BlockEditorProps {
@@ -41,6 +46,11 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [showPreview, setShowPreview] = useState(false);
   const dragOverIndex = useRef<number | null>(null);
+
+  // Refs para textarea
+  const textareaRefs = useRef<{ [key: string]: HTMLTextAreaElement | null }>({});
+  const linkUrlRef = useRef<HTMLInputElement>(null);
+  const linkBlockIdRef = useRef<string | null>(null);
 
   // Parse HTML inicial para blocos
   useEffect(() => {
@@ -78,11 +88,20 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
           content: child.innerHTML || '',
         });
       } else if (child.tagName === 'UL') {
-        const items = Array.from(child.querySelectorAll('li')).map(li => li.textContent || '');
+        const items = Array.from(child.querySelectorAll('li')).map(li => li.innerHTML || li.textContent || '');
         newBlocks.push({
           id,
           type: 'list',
           content: items.join('\n'),
+          listType: 'bulleted',
+        });
+      } else if (child.tagName === 'OL') {
+        const items = Array.from(child.querySelectorAll('li')).map(li => li.innerHTML || li.textContent || '');
+        newBlocks.push({
+          id,
+          type: 'list',
+          content: items.join('\n'),
+          listType: 'numbered',
         });
       } else if (child.tagName === 'IMG') {
         newBlocks.push({
@@ -109,7 +128,8 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
           return `<p>${block.content}</p>`;
         case 'list':
           const items = block.content.split('\n').filter(item => item.trim());
-          return `<ul>${items.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`;
+          const listTag = block.listType === 'numbered' ? 'ol' : 'ul';
+          return `<${listTag}>${items.map(item => `<li>${item}</li>`).join('')}</${listTag}>`;
         case 'image':
           return block.imageUrl 
             ? `<img src="${escapeHtml(block.imageUrl)}" alt="${escapeHtml(block.altText || '')}" class="w-full rounded-lg my-4" />`
@@ -131,6 +151,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
       id: `block-${Date.now()}`,
       type,
       content: '',
+      listType: type === 'list' ? 'bulleted' : undefined,
     };
     setBlocks([...blocks, newBlock]);
     setShowPreview(false);
@@ -167,34 +188,119 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
     setShowPreview(false);
   };
 
-  const formatParagraphSelection = (blockId: string, tag: 'strong' | 'em', isSelection: boolean) => {
-    // Para seleção, vamos simplificar e aplicar ao texto selecionado
-    // Em uma implementação completa, usariamos Selection API
-    const block = blocks.find(b => b.id === blockId);
-    if (!block || block.type !== 'paragraph') return;
+  // Formatação por seleção no textarea
+  const applyFormatToSelection = (blockId: string, tag: 'strong' | 'em' | 'a', href?: string) => {
+    const textarea = textareaRefs.current[blockId];
+    if (!textarea) return;
 
-    if (isSelection) {
-      // Como estamos usando textarea, não podemos formatar seleção facilmente
-      // Vou adicionar um alerta para o usuário
-      alert('Para formatar parte do texto, use o botão "Bloco Inteiro" ou use a prévia para editar manualmente');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    
+    if (start === end) {
+      showError('Selecione o texto para formatar');
       return;
     }
 
-    // Aplica ao bloco inteiro
+    const text = textarea.value;
+    const selectedText = text.substring(start, end);
+    
+    let replacement: string;
+    if (tag === 'a' && href) {
+      replacement = `<a href="${href}" target="_blank" rel="noopener noreferrer">${selectedText}</a>`;
+    } else {
+      const openTag = tag === 'strong' ? '<strong>' : '<em>';
+      const closeTag = tag === 'strong' ? '</strong>' : '</em>';
+      replacement = `${openTag}${selectedText}${closeTag}`;
+    }
+
+    const newText = text.substring(0, start) + replacement + text.substring(end);
+    
+    updateBlock(blockId, { content: newText });
+    
+    // Restaurar foco após atualização
+    setTimeout(() => {
+      const textareaUpdated = textareaRefs.current[blockId];
+      if (textareaUpdated) {
+        textareaUpdated.focus();
+      }
+    }, 0);
+  };
+
+  // Aplicar formatação no bloco inteiro
+  const applyFormatToWholeBlock = (blockId: string, tag: 'strong' | 'em') => {
+    const block = blocks.find(b => b.id === blockId);
+    if (!block || block.type !== 'paragraph') return;
+
     const openTag = tag === 'strong' ? '<strong>' : '<em>';
     const closeTag = tag === 'strong' ? '</strong>' : '</em>';
     
     // Remove tags existentes para evitar duplicação
     let cleanContent = block.content
       .replace(/<\/?strong>/g, '')
-      .replace(/<\/?em>/g, '');
+      .replace(/<\/?em>/g, '')
+      .replace(/<a[^>]*>(.*?)<\/a>/g, '$1');
     
     updateBlock(blockId, { content: `${openTag}${cleanContent}${closeTag}` });
+  };
+
+  // Abrir diálogo de link
+  const openLinkDialog = (blockId: string) => {
+    const textarea = textareaRefs.current[blockId];
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    
+    if (start === end) {
+      showError('Selecione o texto para criar um link');
+      return;
+    }
+
+    linkBlockIdRef.current = blockId;
+    if (linkUrlRef.current) {
+      linkUrlRef.current.value = '';
+      linkUrlRef.current.focus();
+    }
+  };
+
+  // Aplicar link
+  const applyLink = () => {
+    const url = linkUrlRef.current?.value.trim();
+    const blockId = linkBlockIdRef.current;
+    
+    if (!blockId || !url) {
+      showError('Informe uma URL válida');
+      return;
+    }
+
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      showError('A URL deve começar com http:// ou https://');
+      return;
+    }
+
+    applyFormatToSelection(blockId, 'a', url);
+    
+    if (linkUrlRef.current) {
+      linkUrlRef.current.value = '';
+    }
+    linkBlockIdRef.current = null;
+  };
+
+  // Upload de imagem
+  const handleImageUpload = async (blockId: string, file: File) => {
+    try {
+      const imageUrl = await blogService.uploadBlogImage(file);
+      updateBlock(blockId, { imageUrl });
+      showSuccess('Imagem enviada com sucesso!');
+    } catch (error: any) {
+      showError(error.message || 'Erro ao enviar imagem');
+    }
   };
 
   const renderBlockEditor = (block: Block, index: number) => {
     const isFirst = index === 0;
     const isLast = index === blocks.length - 1;
+    const showLinkDialog = linkBlockIdRef.current === block.id;
 
     return (
       <Card 
@@ -209,7 +315,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
             <span className="text-xs font-medium text-muted-foreground uppercase">
               {block.type === 'heading' && 'Título (H2)'}
               {block.type === 'paragraph' && 'Parágrafo'}
-              {block.type === 'list' && 'Lista'}
+              {block.type === 'list' && `Lista (${block.listType === 'numbered' ? 'numerada' : 'marcadores'})`}
               {block.type === 'image' && 'Imagem'}
             </span>
             <div className="flex-1" />
@@ -265,24 +371,25 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
           {block.type === 'paragraph' && (
             <div>
               <Textarea
+                ref={(el) => { textareaRefs.current[block.id] = el; }}
                 value={block.content}
                 onChange={(e) => updateBlock(block.id, { content: e.target.value })}
                 placeholder="Digite o parágrafo..."
                 rows={4}
                 className="mb-3"
               />
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2 mb-3">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={(e) => {
                     e.preventDefault();
-                    formatParagraphSelection(block.id, 'strong', false);
+                    applyFormatToSelection(block.id, 'strong');
                   }}
                 >
                   <Bold className="w-4 h-4 mr-2" />
-                  Bloco Negrito
+                  B seleção
                 </Button>
                 <Button
                   type="button"
@@ -290,29 +397,160 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
                   size="sm"
                   onClick={(e) => {
                     e.preventDefault();
-                    formatParagraphSelection(block.id, 'em', false);
+                    applyFormatToSelection(block.id, 'em');
                   }}
                 >
                   <Italic className="w-4 h-4 mr-2" />
-                  Bloco Itálico
+                  I seleção
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    openLinkDialog(block.id);
+                  }}
+                >
+                  <LinkIcon className="w-4 h-4 mr-2" />
+                  Link
+                </Button>
+              </div>
+              {showLinkDialog && (
+                <div className="flex gap-2 p-3 bg-muted rounded-md">
+                  <Input
+                    ref={linkUrlRef}
+                    placeholder="https://exemplo.com"
+                    className="flex-1"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        applyLink();
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      applyLink();
+                    }}
+                  >
+                    Aplicar
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      linkBlockIdRef.current = null;
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    applyFormatToWholeBlock(block.id, 'strong');
+                  }}
+                >
+                  <Bold className="w-4 h-4 mr-2" />
+                  B bloco inteiro
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    applyFormatToWholeBlock(block.id, 'em');
+                  }}
+                >
+                  <Italic className="w-4 h-4 mr-2" />
+                  I bloco inteiro
                 </Button>
               </div>
             </div>
           )}
 
           {block.type === 'list' && (
-            <Textarea
-              value={block.content}
-              onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-              placeholder="Digite os itens da lista (um por linha)..."
-              rows={6}
-            />
+            <div>
+              <div className="flex gap-2 mb-3">
+                <Button
+                  type="button"
+                  variant={block.listType === 'bulleted' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    updateBlock(block.id, { listType: 'bulleted' });
+                  }}
+                >
+                  <List className="w-4 h-4 mr-2" />
+                  Marcadores
+                </Button>
+                <Button
+                  type="button"
+                  variant={block.listType === 'numbered' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    updateBlock(block.id, { listType: 'numbered' });
+                  }}
+                >
+                  <ListOrdered className="w-4 h-4 mr-2" />
+                  Numerada
+                </Button>
+              </div>
+              <Textarea
+                value={block.content}
+                onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+                placeholder="Digite os itens da lista (um por linha)..."
+                rows={6}
+              />
+            </div>
           )}
 
           {block.type === 'image' && (
             <div className="space-y-3">
               <div>
-                <Label htmlFor={`url-${block.id}`}>URL da Imagem *</Label>
+                <Label htmlFor={`upload-${block.id}`}>Upload de Imagem</Label>
+                <div className="flex gap-2 mt-2">
+                  <Input
+                    id={`upload-${block.id}`}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      e.preventDefault();
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        handleImageUpload(block.id, file);
+                      }
+                    }}
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      document.getElementById(`upload-${block.id}`)?.click();
+                    }}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Enviar
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor={`url-${block.id}`}>OU URL da Imagem</Label>
                 <Input
                   id={`url-${block.id}`}
                   value={block.imageUrl || ''}
@@ -365,10 +603,11 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
               return <p key={block.id} className="mb-4" dangerouslySetInnerHTML={{ __html: block.content }} />;
             case 'list':
               const items = block.content.split('\n').filter(item => item.trim());
+              const ListTag = block.listType === 'numbered' ? 'ol' : 'ul';
               return (
-                <ul key={block.id} className="list-disc pl-6 mb-4 space-y-2">
-                  {items.map((item, i) => <li key={i}>{item}</li>)}
-                </ul>
+                <ListTag key={block.id} className={block.listType === 'numbered' ? 'list-decimal pl-6 mb-4 space-y-2' : 'list-disc pl-6 mb-4 space-y-2'}>
+                  {items.map((item, i) => <li key={i} dangerouslySetInnerHTML={{ __html: item }} />)}
+                </ListTag>
               );
             case 'image':
               return block.imageUrl ? (

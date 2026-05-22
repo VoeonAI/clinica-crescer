@@ -98,4 +98,30 @@ export const blogService = {
   async togglePublishPost(id: string, published: boolean): Promise<BlogPost> {
     return this.updatePost(id, { published });
   },
+
+  async uploadBlogImage(file: File): Promise<string> {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('blog-images')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (uploadError) {
+      if (uploadError.message.includes('The resource was not found')) {
+        throw new Error('O bucket "blog-images" não existe. Crie-o no Supabase Storage para fazer upload de imagens.');
+      }
+      throw uploadError;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('blog-images')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  },
 };
