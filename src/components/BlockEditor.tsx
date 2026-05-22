@@ -212,13 +212,47 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
   };
 
   const addBlock = (type: BlockType) => {
-    const newBlock: Block = {
-      id: `block-${Date.now()}`,
+    const baseBlock = {
+      id: `block-${Date.now()}-${Math.random()}`,
       type,
-      content: '',
-      listType: type === 'list' ? 'bulleted' : undefined,
     };
-    setBlocks([...blocks, newBlock]);
+
+    let newBlock: Block;
+
+    switch (type) {
+      case 'image':
+        newBlock = {
+          ...baseBlock,
+          imageUrl: '',
+          altText: '',
+          content: '',
+        } as Block;
+        console.log("add image block", newBlock);
+        break;
+      case 'video':
+        newBlock = {
+          ...baseBlock,
+          videoUrl: '',
+          content: '',
+        } as Block;
+        break;
+      case 'list':
+        newBlock = {
+          ...baseBlock,
+          content: '',
+          listType: 'bulleted',
+        } as Block;
+        break;
+      default:
+        newBlock = {
+          ...baseBlock,
+          content: '',
+        } as Block;
+    }
+
+    const updatedBlocks = [...blocks, newBlock];
+    console.log("blocks after image", updatedBlocks);
+    setBlocks(updatedBlocks);
     setShowPreview(false);
   };
 
@@ -241,19 +275,13 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
       return;
     }
 
-    // Copiar array
+    // Copiar array e mover
     const updated = [...blocks];
-    
-    // Swap seguro manual
     const temp = updated[index];
     updated[index] = updated[newIndex];
     updated[newIndex] = temp;
 
-    // Filtrar para garantir que nenhum bloco undefined foi introduzido
-    const cleanBlocks = updated.filter(Boolean);
-
-    // Atualizar estado
-    setBlocks(cleanBlocks);
+    setBlocks(updated);
   };
 
   const handlePasteText = (text: string) => {
@@ -366,7 +394,6 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
       showSuccess('Imagem enviada com sucesso!');
     } catch (error: any) {
       console.error('Erro ao enviar imagem:', error);
-      // Mostrar erro mais amigável
       const errorMsg = error.message || 'Erro ao enviar imagem';
       
       if (errorMsg.includes('bucket') || errorMsg.includes('storage')) {
@@ -380,7 +407,6 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
   };
 
   const renderBlockEditor = (block: Block, index: number) => {
-    // Guard: Se o bloco for inválido, não renderiza nada
     if (!block) {
       return null;
     }
@@ -388,6 +414,8 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
     const isFirst = index === 0;
     const isLast = index === blocks.length - 1;
     const showLinkDialog = linkBlockIdRef.current === block.id;
+
+    console.log("rendering block", block.id, block.type, block);
 
     return (
       <Card 
@@ -712,7 +740,6 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
     return (
       <div className="blog-content">
         {blocks.map((block, index) => {
-          // Guard: Ignorar blocos inválidos no preview
           if (!block) return null;
 
           switch (block.type) {
