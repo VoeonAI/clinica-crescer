@@ -44,7 +44,7 @@ interface BlockEditorProps {
   placeholder?: string;
 }
 
-const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder }) => {
+const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange,placeholder }) => {
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [showPreview, setShowPreview] = useState(false);
   const dragOverIndex = useRef<number | null>(null);
@@ -53,20 +53,29 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
   const textareaRefs = useRef<{ [key: string]: HTMLTextAreaElement | null }>({});
   const linkUrlRef = useRef<HTMLInputElement>(null);
   const linkBlockIdRef = useRef<string | null>(null);
+  
+  // Ref para controlar se já carregamos o conteúdo inicial
+  const didParseInitialContent = useRef(false);
 
-  // Parse HTML inicial para blocos
+  // Parse HTML inicial apenas uma vez ao carregar
   useEffect(() => {
-    if (value) {
+    if (!didParseInitialContent.current && value) {
+      console.log("PARSE INITIAL CONTENT", value);
       parseHTMLToBlocks(value);
+      didParseInitialContent.current = true;
     }
   }, [value]);
 
-  // Converter blocos para HTML
+  // Converter blocos para HTML apenas quando blocks mudar
   useEffect(() => {
-    if (blocks.length > 0) {
-      const html = blocksToHTML(blocks);
-      onChange(html);
+    // Não gerar HTML se ainda não carregamos o conteúdo inicial
+    // Isso evita sobrescrever o conteúdo inicial com vazio
+    if (!didParseInitialContent.current) {
+      return;
     }
+    
+    const html = blocksToHTML(blocks);
+    onChange(html);
   }, [blocks]);
 
   const extractYouTubeId = (url: string): string | null => {
@@ -172,6 +181,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
 
     // Atualizar blocks se encontrou novos
     if (newBlocks.length > 0) {
+      console.log("SET BLOCKS FROM PARSE", newBlocks);
       setBlocks(newBlocks);
     }
   };
@@ -227,6 +237,8 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
           altText: '',
           content: '',
         } as Block;
+        console.log("ADD IMAGE CLICKED");
+        console.log("before setBlocks", blocks);
         console.log("add image block", newBlock);
         break;
       case 'video':
@@ -251,9 +263,12 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
     }
 
     const updatedBlocks = [...blocks, newBlock];
-    console.log("blocks after image", updatedBlocks);
+    console.log("after setBlocks image", updatedBlocks);
     setBlocks(updatedBlocks);
     setShowPreview(false);
+    
+    // Marcar que já carregamos o conteúdo inicial
+    didParseInitialContent.current = true;
   };
 
   const updateBlock = (id: string, updates: Partial<Block>) => {
@@ -263,6 +278,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
   };
 
   const deleteBlock = (id: string) => {
+    console.log("DELETE BLOCK", id);
     setBlocks(blocks.filter(block => block.id !== id));
   };
 
@@ -281,6 +297,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
     updated[index] = updated[newIndex];
     updated[newIndex] = temp;
 
+    console.log("REORDER BLOCKS", updated);
     setBlocks(updated);
   };
 
@@ -291,8 +308,10 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
       type: 'paragraph' as BlockType,
       content: escapeHtml(p.trim()),
     }));
+    console.log("PASTE TEXT", newBlocks);
     setBlocks([...blocks, ...newBlocks]);
     setShowPreview(false);
+    didParseInitialContent.current = true;
   };
 
   const applyFormatToSelection = (blockId: string, tag: 'strong' | 'em' | 'a', href?: string) => {
@@ -415,7 +434,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange, placeholder 
     const isLast = index === blocks.length - 1;
     const showLinkDialog = linkBlockIdRef.current === block.id;
 
-    console.log("rendering block", block.id, block.type, block);
+    console.log("RENDERING BLOCK", block.id, block.type, block);
 
     return (
       <Card 
