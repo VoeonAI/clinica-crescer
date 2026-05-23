@@ -23,7 +23,7 @@ const AdminDashboard = () => {
       const [posts, staff, users] = await Promise.all([
         blogService.getAdminPosts(),
         staffService.getAdminStaff(),
-        authService.getProfiles(),
+        authService.getAllProfiles(),
       ]);
 
       setStats({

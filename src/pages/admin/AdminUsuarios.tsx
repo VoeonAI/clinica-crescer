@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import { authService, Profile } from "@/services/authService";
-import { profileService } from "@/services/profileService";
+import { authService } from "@/services/authService";
+import { profileService, Profile } from "@/services/profileService";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Plus, Mail, Shield, Trash2, Key, AlertCircle, Edit } from "lucide-react";
+import { Plus, Mail, Shield, Trash2, AlertCircle, Edit } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import { PermissionGate } from "@/components/PermissionGate";
 import {
@@ -24,22 +24,15 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+const getErrorMessage = (error: unknown, fallback: string) => {
+  return error instanceof Error ? error.message : fallback;
+};
+
 const AdminUsuarios = () => {
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  // Modal de Criação
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [newUser, setNewUser] = useState({
-    email: "",
-    fullName: "",
-    password: "",
-    role: "editor" as "master" | "editor" | "viewer",
-  });
-  const [syncMode, setSyncMode] = useState(false);
-  const [submittingCreate, setSubmittingCreate] = useState(false);
-
-  // Modal de Edição
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<Profile | null>(null);
   const [editForm, setEditForm] = useState({
@@ -57,39 +50,12 @@ const AdminUsuarios = () => {
     try {
       const data = await authService.getAllProfiles();
       setUsers(data);
-    } catch (error) {
-      console.error('Error loading users:', error);
-      showError("Erro ao carregar usuários.");
+    } catch (error: unknown) {
+      console.error("Error loading users:", error);
+      showError(getErrorMessage(error, "Erro ao carregar usuários."));
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleCreateUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmittingCreate(true);
-
-    try {
-      if (syncMode) {
-        await authService.syncExistingUser(newUser.email, newUser.role, newUser.fullName);
-        showSuccess("Usuário sincronizado com sucesso!");
-      } else {
-        await authService.createAdminUser(newUser.fullName, newUser.email, newUser.password, newUser.role);
-        showSuccess("Usuário criado com sucesso.");
-      }
-      setCreateDialogOpen(false);
-      resetCreateForm();
-      loadUsers();
-    } catch (error: any) {
-      showError(error.message || "Erro ao criar usuário");
-    } finally {
-      setSubmittingCreate(false);
-    }
-  };
-
-  const resetCreateForm = () => {
-    setNewUser({ email: "", fullName: "", password: "", role: "editor" });
-    setSyncMode(false);
   };
 
   const openEditDialog = (user: Profile) => {
@@ -108,27 +74,44 @@ const AdminUsuarios = () => {
     setSubmittingEdit(true);
 
     try {
+      const masterCount = users.filter((user) => user.role === "master").length;
+      if (editingUser.role === "master" && editForm.role !== "master" && masterCount <= 1) {
+        showError("Não é possível remover a função do último administrador.");
+        return;
+      }
+
       await profileService.updateProfile(editingUser.id, {
         full_name: editForm.fullName,
         role: editForm.role,
       });
       showSuccess("Usuário atualizado com sucesso.");
       setEditDialogOpen(false);
-      loadUsers();
-    } catch (error) {
-      showError("Erro ao atualizar usuário");
+      await loadUsers();
+    } catch (error: unknown) {
+      showError(getErrorMessage(error, "Erro ao atualizar usuário"));
     } finally {
       setSubmittingEdit(false);
     }
   };
 
-  const handleDeleteUser = async (id: string, name: string) => {
+  const handleDeleteUser = async (targetUser: Profile) => {
     try {
-      await authService.deleteUser(id);
-      showSuccess(`Usuário ${name} removido do sistema.`);
-      loadUsers();
-    } catch (error) {
-      showError("Erro ao remover usuário");
+      if (targetUser.id === currentUser?.id) {
+        showError("Você não pode remover o seu próprio usuário.");
+        return;
+      }
+
+      const masterCount = users.filter((user) => user.role === "master").length;
+      if (targetUser.role === "master" && masterCount <= 1) {
+        showError("Não é possível remover o último administrador.");
+        return;
+      }
+
+      await profileService.deleteProfile(targetUser.id);
+      showSuccess(`Usuário ${targetUser.full_name || targetUser.email} removido do sistema.`);
+      await loadUsers();
+    } catch (error: unknown) {
+      showError(getErrorMessage(error, "Erro ao remover usuário"));
     }
   };
 
@@ -206,14 +189,15 @@ const AdminUsuarios = () => {
                           <AlertDialogHeader>
                             <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Tem certeza que deseja excluir "{user.full_name || user.email}"? 
-                              Isso removerá o acesso ao sistema. O usuário de autenticação permanecerá ativo no Supabase.
+                              Tem certeza que deseja excluir "{user.full_name || user.email}"?
+                              Isso removerá apenas o profile em public.profiles. O usuário de
+                              autenticação permanecerá ativo no Supabase.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
                             <AlertDialogAction
-                              onClick={() => handleDeleteUser(user.id, user.full_name || user.email)}
+                              onClick={() => handleDeleteUser(user)}
                               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                             >
                               Excluir
@@ -240,102 +224,35 @@ const AdminUsuarios = () => {
         </div>
       )}
 
-      {/* Modal Criar Usuário */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {syncMode ? "Sincronizar Usuário" : "Criar Novo Usuário"}
-            </DialogTitle>
+            <DialogTitle>Criar usuário manualmente</DialogTitle>
+            <DialogDescription>
+              A criação automática pelo painel está temporariamente desativada.
+            </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleCreateUser} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="create-name">Nome Completo *</Label>
-              <Input
-                id="create-name"
-                value={newUser.fullName}
-                onChange={(e) => setNewUser({ ...newUser, fullName: e.target.value })}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="create-email">Email *</Label>
-              <Input
-                id="create-email"
-                type="email"
-                value={newUser.email}
-                onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                required
-              />
-            </div>
-            {!syncMode && (
-              <div className="space-y-2">
-                <Label htmlFor="create-password">Senha Temporária *</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="create-password"
-                    type="password"
-                    value={newUser.password}
-                    onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                    placeholder="Mínimo 6 caracteres"
-                    required
-                    minLength={6}
-                    className="flex-1"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setNewUser({ ...newUser, password: Math.random().toString(36).slice(-8) })}
-                  >
-                    <Key className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="create-role">Função *</Label>
-              <Select
-                value={newUser.role}
-                onValueChange={(value: any) => setNewUser({ ...newUser, role: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="viewer">Visualizador</SelectItem>
-                  <SelectItem value="editor">Editor</SelectItem>
-                  <SelectItem value="master">Administrador</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center space-x-2 p-3 bg-muted rounded-md">
-              <Switch
-                id="sync-mode"
-                checked={syncMode}
-                onCheckedChange={setSyncMode}
-              />
-              <Label htmlFor="sync-mode" className="text-sm cursor-pointer">
-                Sincronizar usuário existente
-              </Label>
-            </div>
+          <div className="space-y-4 text-sm text-muted-foreground">
+            <p>
+              Crie o usuário em Supabase Authentication &gt; Users. Depois volte aqui
+              para ajustar a função.
+            </p>
             <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => { setCreateDialogOpen(false); resetCreateForm(); }}>
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={submittingCreate}>
-                {submittingCreate ? "Salvando..." : "Salvar"}
+              <Button type="button" onClick={() => setCreateDialogOpen(false)}>
+                Entendi
               </Button>
             </div>
-          </form>
+          </div>
         </DialogContent>
       </Dialog>
 
-      {/* Modal Editar Usuário */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Editar Usuário</DialogTitle>
+            <DialogTitle>Editar usuário</DialogTitle>
+            <DialogDescription>
+              Altere o nome exibido e a função deste profile.
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleEditUser} className="space-y-4">
             <div className="space-y-2">
@@ -350,7 +267,9 @@ const AdminUsuarios = () => {
               <Label htmlFor="edit-role">Função</Label>
               <Select
                 value={editForm.role}
-                onValueChange={(value: any) => setEditForm({ ...editForm, role: value })}
+                onValueChange={(value: "master" | "editor" | "viewer") =>
+                  setEditForm({ ...editForm, role: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
