@@ -72,10 +72,24 @@ export const profileService = {
 
   async deleteProfile(id: string): Promise<void> {
     const { error } = await supabase
-      .from('profiles')
+      .from("profiles")
       .delete()
-      .eq('id', id);
+      .eq("id", id);
 
     if (error) throw error;
+
+    const { data: remainingProfile, error: verifyError } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (verifyError) throw verifyError;
+
+    if (remainingProfile) {
+      throw new Error(
+        'O profile nao foi removido. Verifique se existe a policy DELETE "master_can_delete_profiles" em public.profiles.'
+      );
+    }
   },
 };

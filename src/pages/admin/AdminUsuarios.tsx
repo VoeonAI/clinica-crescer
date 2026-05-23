@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { authService } from "@/services/authService";
 import { profileService, Profile } from "@/services/profileService";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -48,11 +47,11 @@ const AdminUsuarios = () => {
   const loadUsers = async () => {
     setLoading(true);
     try {
-      const data = await authService.getAllProfiles();
+      const data = await profileService.getAllProfiles();
       setUsers(data);
     } catch (error: unknown) {
       console.error("Error loading users:", error);
-      showError(getErrorMessage(error, "Erro ao carregar usuários."));
+      showError(getErrorMessage(error, "Erro ao carregar usuarios."));
     } finally {
       setLoading(false);
     }
@@ -76,7 +75,7 @@ const AdminUsuarios = () => {
     try {
       const masterCount = users.filter((user) => user.role === "master").length;
       if (editingUser.role === "master" && editForm.role !== "master" && masterCount <= 1) {
-        showError("Não é possível remover a função do último administrador.");
+        showError("Nao e possivel remover a funcao do ultimo administrador.");
         return;
       }
 
@@ -84,11 +83,11 @@ const AdminUsuarios = () => {
         full_name: editForm.fullName,
         role: editForm.role,
       });
-      showSuccess("Usuário atualizado com sucesso.");
       setEditDialogOpen(false);
       await loadUsers();
+      showSuccess("Usuario atualizado com sucesso.");
     } catch (error: unknown) {
-      showError(getErrorMessage(error, "Erro ao atualizar usuário"));
+      showError(getErrorMessage(error, "Erro ao atualizar usuario"));
     } finally {
       setSubmittingEdit(false);
     }
@@ -97,21 +96,23 @@ const AdminUsuarios = () => {
   const handleDeleteUser = async (targetUser: Profile) => {
     try {
       if (targetUser.id === currentUser?.id) {
-        showError("Você não pode remover o seu próprio usuário.");
+        showError("Voce nao pode remover o seu proprio usuario.");
         return;
       }
 
       const masterCount = users.filter((user) => user.role === "master").length;
       if (targetUser.role === "master" && masterCount <= 1) {
-        showError("Não é possível remover o último administrador.");
+        showError("Nao e possivel remover o ultimo administrador.");
         return;
       }
 
+      console.info("Deleting profile id:", targetUser.id);
       await profileService.deleteProfile(targetUser.id);
-      showSuccess(`Usuário ${targetUser.full_name || targetUser.email} removido do sistema.`);
       await loadUsers();
+      showSuccess(`Usuario ${targetUser.full_name || targetUser.email} removido do sistema.`);
     } catch (error: unknown) {
-      showError(getErrorMessage(error, "Erro ao remover usuário"));
+      console.error("Error deleting profile:", error);
+      showError(getErrorMessage(error, "Erro ao remover usuario"));
     }
   };
 
@@ -136,18 +137,18 @@ const AdminUsuarios = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Usuários</h1>
+        <h1 className="text-3xl font-bold">Usuarios</h1>
         <PermissionGate allowedRoles={["master"]}>
           <Button onClick={() => setCreateDialogOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />
-            Novo Usuário
+            Novo Usuario
           </Button>
         </PermissionGate>
       </div>
 
       {loading ? (
         <div className="text-center py-8">
-          <p className="text-muted-foreground">Carregando usuários...</p>
+          <p className="text-muted-foreground">Carregando usuarios...</p>
         </div>
       ) : users.length === 0 ? (
         <Card>
@@ -155,11 +156,11 @@ const AdminUsuarios = () => {
             <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Nenhum profile encontrado</h3>
             <p className="text-sm text-muted-foreground mb-6">
-              Nenhum usuário cadastrado no sistema ainda.
+              Nenhum usuario cadastrado no sistema ainda.
             </p>
             <PermissionGate allowedRoles={["master"]}>
               <Button onClick={() => setCreateDialogOpen(true)}>
-                Adicionar primeiro usuário
+                Adicionar primeiro usuario
               </Button>
             </PermissionGate>
           </CardContent>
@@ -187,11 +188,11 @@ const AdminUsuarios = () => {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                            <AlertDialogTitle>Confirmar exclusao</AlertDialogTitle>
                             <AlertDialogDescription>
                               Tem certeza que deseja excluir "{user.full_name || user.email}"?
-                              Isso removerá apenas o profile em public.profiles. O usuário de
-                              autenticação permanecerá ativo no Supabase.
+                              Isso removera apenas o profile em public.profiles. O usuario de
+                              autenticacao permanecera ativo no Supabase.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
@@ -227,15 +228,15 @@ const AdminUsuarios = () => {
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Criar usuário manualmente</DialogTitle>
+            <DialogTitle>Criar usuario manualmente</DialogTitle>
             <DialogDescription>
-              A criação automática pelo painel está temporariamente desativada.
+              A criacao automatica pelo painel esta temporariamente desativada.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 text-sm text-muted-foreground">
             <p>
-              Crie o usuário em Supabase Authentication &gt; Users. Depois volte aqui
-              para ajustar a função.
+              Crie o usuario em Supabase Authentication &gt; Users. Depois volte aqui
+              para ajustar a funcao.
             </p>
             <div className="flex justify-end gap-2 pt-4">
               <Button type="button" onClick={() => setCreateDialogOpen(false)}>
@@ -249,9 +250,9 @@ const AdminUsuarios = () => {
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Editar usuário</DialogTitle>
+            <DialogTitle>Editar usuario</DialogTitle>
             <DialogDescription>
-              Altere o nome exibido e a função deste profile.
+              Altere o nome exibido e a funcao deste profile.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleEditUser} className="space-y-4">
@@ -264,7 +265,7 @@ const AdminUsuarios = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-role">Função</Label>
+              <Label htmlFor="edit-role">Funcao</Label>
               <Select
                 value={editForm.role}
                 onValueChange={(value: "master" | "editor" | "viewer") =>
