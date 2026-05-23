@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -7,7 +8,6 @@ import {
   CheckCircle2,
   HeartHandshake,
   Puzzle,
-  ShieldCheck,
   Sparkles,
 } from "lucide-react";
 
@@ -41,6 +41,9 @@ const ASSETS = {
   icon: "icons/icone.png",
   animatedSvg: "svg-animado/crescer-logoforma-animada-carregando.svg",
 };
+
+const HERO_VIDEO_URL =
+  "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/video/A-clinica-crescer-cresceu-web-720.mp4";
 
 const services = [
   {
@@ -178,6 +181,8 @@ const Index = () => {
   const [latestPosts, setLatestPosts] = useState<BlogPost[]>([]);
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loadingContent, setLoadingContent] = useState(true);
+  const [heroVideoActive, setHeroVideoActive] = useState(false);
+  const heroVideoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -218,6 +223,29 @@ const Index = () => {
     return staff.filter((member) => member.id !== founder?.id).slice(0, 6);
   }, [founder?.id, staff]);
 
+  const handleHeroPlay = () => {
+    const video = heroVideoRef.current;
+
+    if (!video) return;
+
+    setHeroVideoActive(true);
+    video.currentTime = 0;
+    video.muted = false;
+    video.volume = 0.72;
+    void video.play();
+  };
+
+  const handleHeroStop = () => {
+    const video = heroVideoRef.current;
+
+    if (!video) return;
+
+    video.pause();
+    video.currentTime = 0;
+    video.muted = true;
+    setHeroVideoActive(false);
+  };
+
   const homeSchema = {
     "@context": "https://schema.org",
     "@type": "WebPage",
@@ -248,15 +276,32 @@ const Index = () => {
       <FAQSchema faqs={faqData} />
 
       <main className="bg-[#fbfafc] text-[#262033]">
-        <Section className="min-h-[calc(100vh-5rem)] bg-[#fbfafc] pt-14 md:pt-20" spacing="compact">
+        <Section className="min-h-[calc(100vh-5rem)] bg-[#fbfafc] pb-16 pt-14 md:pb-24 md:pt-20" spacing="compact">
           <div
             aria-hidden="true"
-            className="absolute inset-x-0 top-0 h-[70%] opacity-[0.08]"
-            style={{ backgroundImage: `url("${siteImageUrl(ASSETS.texturePurple)}")`, backgroundSize: "760px auto" }}
+            className="absolute inset-x-0 top-0 h-[88%] opacity-[0.42] mix-blend-multiply"
+            style={{
+              backgroundImage: `radial-gradient(circle at 82% 18%, rgba(255,217,111,0.34), transparent 34%), linear-gradient(135deg, rgba(255,255,255,0.22), rgba(255,230,135,0.22) 45%, rgba(251,250,252,0.44)), url("${siteImageUrl(ASSETS.textureYellow)}")`,
+              backgroundPosition: "center, center, center top",
+              backgroundRepeat: "no-repeat, no-repeat, repeat-x",
+              backgroundSize: "cover, cover, 760px auto",
+            }}
           />
           <div
             aria-hidden="true"
-            className="absolute -right-24 top-20 h-72 w-72 rounded-full bg-[#fff3c7]/70 blur-3xl"
+            className="absolute inset-x-0 top-0 h-[88%] bg-gradient-to-r from-[#fbfafc]/42 via-transparent to-[#fbfafc]/18"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent via-[#fbfafc]/82 to-[#fbfafc]"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute -right-24 top-20 h-80 w-80 rounded-full bg-[#ffd96f]/45 blur-3xl"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute left-[46%] top-16 hidden h-72 w-72 rounded-full bg-[#dff1ff]/60 blur-3xl lg:block"
           />
           <Container className="grid items-center gap-12 lg:grid-cols-[0.96fr_1.04fr]">
             <div className="relative z-10">
@@ -277,7 +322,7 @@ const Index = () => {
                   <Link to="/sobre">Conhecer a Clínica Crescer</Link>
                 </Button>
               </div>
-              <div className="mt-9 grid gap-3 text-sm text-[#5d546b] sm:grid-cols-3">
+              <div className="relative -mx-3 mt-9 grid gap-3 rounded-[28px] bg-[#fbfafc]/20 px-3 py-2 text-sm text-[#4b435a] backdrop-blur-[2px] sm:grid-cols-3">
                 {["Equipe multidisciplinar", "Decisões baseadas em dados", "Família como parceira"].map((item) => (
                   <div key={item} className="flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-[#8d63c7]" />
@@ -287,15 +332,92 @@ const Index = () => {
               </div>
             </div>
 
-            <div className="relative min-h-[540px]">
-              <FloatingMark className="-right-4 -top-10" />
-              <div className="absolute left-2 top-6 h-[420px] w-[78%] rounded-[44px] bg-[#efe2ff]" />
+            <div className="relative mx-auto min-h-[560px] w-full max-w-[560px] lg:mx-0">
+              <FloatingMark className="-right-2 -top-8 h-28 w-28" />
               <div
-                className="absolute right-0 top-0 h-[500px] w-[82%] overflow-hidden rounded-[46px] shadow-[0_30px_90px_rgba(62,46,89,0.16)]"
-                style={{ clipPath: "polygon(9% 0, 100% 0, 92% 100%, 0 92%)" }}
+                aria-hidden="true"
+                className="absolute left-2 top-20 h-[390px] w-[72%] rounded-[48px] bg-[#efe2ff]/90 shadow-[0_24px_80px_rgba(62,46,89,0.08)]"
+                style={{ transform: "rotate(-8deg)" }}
+              />
+              <div
+                aria-hidden="true"
+                className={cn(
+                  "absolute bottom-6 right-8 h-72 w-72 rounded-full bg-[#8d63c7]/18 blur-3xl transition-all duration-700",
+                  heroVideoActive && "scale-110 bg-[#8d63c7]/28",
+                )}
+              />
+              <div
+                aria-hidden="true"
+                className="absolute right-0 top-16 h-[440px] w-[78%] rounded-[56px] opacity-70 shadow-[0_22px_70px_rgba(62,46,89,0.12)]"
+                style={{
+                  backgroundImage: `linear-gradient(135deg, rgba(255,255,255,0.82), rgba(239,226,255,0.64)), url("${siteImageUrl(ASSETS.patternPurple)}")`,
+                  backgroundSize: "cover, 360px auto",
+                  transform: "rotate(7deg)",
+                }}
+              />
+
+              <div
+                className={cn(
+                  "group absolute left-1/2 top-2 z-20 w-[270px] -translate-x-1/2 animate-[heroFloat_12500ms_ease-in-out_infinite] transition-[filter,--hero-phone-y,--hero-phone-scale] duration-1000 ease-out sm:w-[310px] lg:left-[55%]",
+                  heroVideoActive && "z-40 drop-shadow-[0_42px_72px_rgba(91,61,134,0.28)]",
+                )}
+                style={
+                  {
+                    "--hero-phone-rotate": "-5deg",
+                    "--hero-phone-scale": heroVideoActive ? "1.018" : "1",
+                    "--hero-phone-y": heroVideoActive ? "-6px" : "0px",
+                  } as CSSProperties
+                }
               >
-                <HomeImage src={ASSETS.hero} alt="Recepção acolhedora da Clínica Crescer" priority className="h-full w-full" />
+                <div
+                  className={cn(
+                    "relative rounded-[46px] bg-[#262033] p-3 shadow-[0_42px_110px_rgba(38,32,51,0.34)] ring-1 ring-white/40 transition-[box-shadow,transform,ring-color] duration-1000 ease-out group-hover:-translate-y-1",
+                    heroVideoActive && "shadow-[0_54px_130px_rgba(38,32,51,0.46)] ring-2 ring-[#fff3c7]/80",
+                  )}
+                >
+                  <div className="absolute left-1/2 top-3 z-30 h-5 w-24 -translate-x-1/2 rounded-full bg-[#16121d]" />
+                  <div className="relative aspect-[9/16] overflow-hidden rounded-[34px] bg-[#efe2ff]">
+                    <video
+                      ref={heroVideoRef}
+                      className="h-full w-full object-cover"
+                      src={HERO_VIDEO_URL}
+                      autoPlay
+                      muted={!heroVideoActive}
+                      loop
+                      playsInline
+                      preload="metadata"
+                      aria-label="Vídeo institucional da Clínica Crescer"
+                    />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#262033]/22 via-transparent to-white/8" />
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#262033]/42 to-transparent" />
+                    {!heroVideoActive && (
+                    <button
+                      type="button"
+                      onClick={handleHeroPlay}
+                      className={cn(
+                        "absolute left-1/2 top-1/2 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/88 shadow-[0_18px_55px_rgba(91,61,134,0.28)] outline-none ring-1 ring-white/80 backdrop-blur-md transition-all duration-700 ease-out hover:scale-105 hover:bg-white focus-visible:ring-2 focus-visible:ring-[#ffd96f]",
+                      )}
+                      aria-label="Assistir vídeo com áudio"
+                    >
+                      <div className="ml-1 h-0 w-0 border-y-[12px] border-l-[18px] border-y-transparent border-l-[#5b3d86]" />
+                    </button>
+                    )}
+                  </div>
+                </div>
               </div>
+
+              {heroVideoActive && (
+                <button
+                  type="button"
+                  onClick={handleHeroStop}
+                  className="absolute right-3 top-[470px] z-50 inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/86 px-4 py-2 text-xs font-semibold text-[#342d3f] shadow-[0_18px_48px_rgba(62,46,89,0.18)] backdrop-blur-xl transition-all duration-700 ease-out hover:-translate-y-0.5 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8d63c7] sm:right-12 lg:right-6"
+                  aria-label="Parar vídeo"
+                >
+                  <span className="h-2.5 w-2.5 rounded-[2px] bg-[#8d63c7]" aria-hidden="true" />
+                  Parar
+                </button>
+              )}
+
               <div
                 aria-hidden="true"
                 className="absolute -bottom-1 left-0 h-52 w-72 rounded-[38px] opacity-80 shadow-[0_22px_70px_rgba(62,46,89,0.12)]"
@@ -304,12 +426,21 @@ const Index = () => {
                   backgroundSize: "cover, 320px auto",
                 }}
               />
-              <div className="absolute bottom-8 left-8 max-w-xs rounded-[28px] bg-white/94 p-5 shadow-[0_14px_45px_rgba(62,46,89,0.12)] backdrop-blur">
-                <div className="flex items-start gap-3">
-                  <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-[#8d63c7]" />
-                  <p className="text-sm leading-6 text-[#5d546b]">
+              <div className="absolute bottom-10 left-2 right-2 z-30 rounded-[30px] border border-white/85 bg-white/85 p-5 shadow-[0_24px_72px_rgba(62,46,89,0.18)] backdrop-blur-xl sm:-left-2 sm:right-auto sm:max-w-[370px] sm:p-6 lg:-left-6">
+                <div className="flex items-start gap-4">
+                  <img
+                    src={siteImageUrl(ASSETS.animatedSvg)}
+                    alt=""
+                    aria-hidden="true"
+                    className="mt-1 h-10 w-10 shrink-0 object-contain"
+                    loading="lazy"
+                  />
+                  <div>
+                    <p className="text-sm font-semibold text-[#262033]">Cuidado que continua na vida real</p>
+                    <p className="mt-2 text-sm leading-6 text-[#342d3f]">
                     Um espaço preparado para acolher dúvidas, orientar famílias e acompanhar cada criança com respeito ao seu tempo.
-                  </p>
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

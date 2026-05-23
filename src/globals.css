@@ -2,6 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+@property --hero-phone-y {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --hero-phone-scale {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 1;
+}
+
+@keyframes heroFloat {
+  0%,
+  100% {
+    transform: translateX(-50%) rotate(var(--hero-phone-rotate, -5deg)) translateY(var(--hero-phone-y, 0px))
+      scale(var(--hero-phone-scale, 1));
+  }
+
+  50% {
+    transform: translateX(-50%) rotate(var(--hero-phone-rotate, -5deg))
+      translateY(calc(var(--hero-phone-y, 0px) - 3px)) scale(var(--hero-phone-scale, 1));
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
