@@ -71,7 +71,7 @@ serve(async (req) => {
     // Ler dados do corpo da requisição
     const { full_name, email, password, role, sync_existing } = await req.json()
 
-    // Validações
+    // Validações básicas
     if (!email || !role || !full_name) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields: full_name, email, role' }),
@@ -88,6 +88,8 @@ serve(async (req) => {
 
     // Se for sincronização de usuário existente
     if (sync_existing) {
+      console.log('[create-admin-user] Sync mode - searching for user in auth');
+      
       // Buscar usuário por email no Auth
       const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers()
       
@@ -102,6 +104,7 @@ serve(async (req) => {
       const existingUser = users.find(u => u.email === email)
       
       if (!existingUser) {
+        console.log('[create-admin-user] User not found in auth:', email);
         return new Response(
           JSON.stringify({ 
             error: 'USER_NOT_FOUND',
@@ -151,7 +154,7 @@ serve(async (req) => {
       )
     }
 
-    // Validações para criação de novo usuário
+    // Validações para criação de NOVO usuário (requer senha)
     if (!password) {
       return new Response(
         JSON.stringify({ error: 'Password is required for new users' }),
@@ -159,12 +162,14 @@ serve(async (req) => {
       )
     }
 
-    if (password.length < 8) {
+    if (password.length < 6) {
       return new Response(
-        JSON.stringify({ error: 'Password must be at least 8 characters' }),
+        JSON.stringify({ error: 'Password must be at least 6 characters' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+
+    console.log('[create-admin-user] Creating new user in auth:', { email, full_name });
 
     // Criar usuário no Supabase Auth
     const { data: authData, error: createError } = await supabaseAdmin.auth.admin.createUser({
@@ -177,12 +182,14 @@ serve(async (req) => {
     })
 
     if (createError) {
+      console.error('[create-admin-user] Error creating user in auth:', createError);
+      
       // Verificar se é erro de email já existente
       if (createError.message.includes('already registered') || 
           createError.message.includes('already been registered') ||
           createError.message.includes('duplicate key') ||
           createError.message.includes('User already registered')) {
-        console.log('[create-admin-user] Email already exists:', email);
+        console.log('[create-admin-user] Email already exists in auth:', email);
         return new Response(
           JSON.stringify({ 
             error: 'USER_ALREADY_EXISTS',
@@ -193,17 +200,26 @@ serve(async (req) => {
         )
       }
       
-      console.error('[create-admin-user] Error creating user:', createError)
       return new Response(
         JSON.stringify({ error: createError.message }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Criar/update profile na tabela pública
+    if (!authData.user) {
+      console.error('[create-admin-user] User creation returned no user');
+      return new Response(
+        JSON.stringify({ error: 'Failed to create user - no user data returned' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    console.log('[create-admin-user] User created in auth successfully:', authData.user.id);
+
+    // Criar profile na tabela pública com o MESMO ID do usuário Auth
     const { error: profileUpdateError } = await supabaseAdmin
       .from('profiles')
-      .upsert({
+      .insert({
         id: authData.user.id,
         email: email,
         full_name: full_name,
@@ -212,8 +228,14 @@ serve(async (req) => {
 
     if (profileUpdateError) {
       console.error('[create-admin-user] Error creating profile:', profileUpdateError)
+      // Se falhar ao criar profile, mas usuário no auth foi criado, logar o erro
+      console.error('[create-admin-user] CRITICAL: Auth user created but profile creation failed:', authData.user.id);
       return new Response(
-        JSON.stringify({ error: 'User created but profile update failed' }),
+        JSON.stringify({ 
+          error: 'Profile creation failed',
+          message: 'Usuário criado no Auth mas falha ao criar profile. Contacte o administrador.',
+          userId: authData.user.id
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -243,7 +265,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('[create-admin-user] Unexpected error:', error)
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: 'Internal server error', details: String(error) }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
