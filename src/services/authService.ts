@@ -26,12 +26,18 @@ export const authService = {
     });
 
     if (error) {
-      // Tratar erro de email já existente
-      if (error.message.includes('Email already registered') || error.status === 409) {
+      console.error('Error calling edge function:', error);
+      
+      // Tratar erro de email já existente (status 409)
+      if (error.status === 409) {
+        // Verificar se tem error.message customizado
+        if (error.message && error.message.includes('USER_ALREADY_EXISTS')) {
+          throw new Error('Este e-mail já está cadastrado. Verifique a lista de usuários ou atualize a função do usuário existente.');
+        }
         throw new Error('Este e-mail já está cadastrado no sistema.');
       }
       
-      console.error('Error creating user via edge function:', error);
+      // Outros erros
       throw error;
     }
 

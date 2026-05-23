@@ -105,9 +105,17 @@ serve(async (req) => {
 
     if (createError) {
       // Verificar se é erro de email já existente
-      if (createError.message.includes('already registered') || createError.message.includes('already been registered')) {
+      if (createError.message.includes('already registered') || 
+          createError.message.includes('already been registered') ||
+          createError.message.includes('duplicate key') ||
+          createError.message.includes('User already registered')) {
+        console.log('[create-admin-user] Email already exists:', email);
         return new Response(
-          JSON.stringify({ error: 'Email already registered' }),
+          JSON.stringify({ 
+            error: 'USER_ALREADY_EXISTS',
+            message: 'Este e-mail já está cadastrado no sistema.',
+            details: 'Verifique a lista de usuários ou atualize a função do usuário existente.'
+          }),
           { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
