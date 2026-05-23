@@ -1,16 +1,19 @@
 import { supabase } from '@/lib/supabaseClient';
 
+export type Role = 'master' | 'editor' | 'viewer';
+
 export type Profile = {
   id: string;
   email: string;
   full_name?: string;
-  role: 'master' | 'editor' | 'viewer';
+  role: Role;
   created_at: string;
   updated_at: string;
 };
 
 export type UpdateProfileData = {
   full_name?: string;
+  role?: Role;
 };
 
 export const profileService = {
@@ -55,15 +58,24 @@ export const profileService = {
     return updatedProfile;
   },
 
-  async updateUserRole(userId: string, role: 'master' | 'editor' | 'viewer'): Promise<Profile> {
+  async updateProfile(id: string, data: UpdateProfileData): Promise<Profile> {
     const { data: updatedProfile, error } = await supabase
       .from('profiles')
-      .update({ role })
-      .eq('id', userId)
+      .update(data)
+      .eq('id', id)
       .select()
       .single();
 
     if (error) throw error;
     return updatedProfile;
+  },
+
+  async deleteProfile(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
   },
 };
