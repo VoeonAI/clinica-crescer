@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { authService, Profile } from "@/services/authService";
+import { authService } from "@/services/authService";
+import { profileService, Profile } from "@/services/profileService";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -43,7 +44,8 @@ const AdminUsuarios = () => {
   const loadUsers = async () => {
     setLoading(true);
     try {
-      const data = await authService.getProfiles();
+      // CORREÇÃO: Usando profileService.getAllProfiles() diretamente
+      const data = await profileService.getAllProfiles();
       setUsers(data);
     } catch (error) {
       console.error('Error loading users:', error);
