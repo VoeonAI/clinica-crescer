@@ -4,7 +4,7 @@ import { staffService, StaffMember } from "@/services/staffService";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, Eye, EyeOff, GripVertical } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, EyeOff, GripVertical, Star, User, Briefcase } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import {
   AlertDialog,
@@ -58,6 +58,42 @@ const AdminEquipe = () => {
     }
   };
 
+  const getMemberTypeBadge = (type: string, featured: boolean) => {
+    const colors = {
+      founder: "bg-purple-100 text-purple-800",
+      therapist: "bg-blue-100 text-blue-800",
+      staff: "bg-gray-100 text-gray-800",
+    };
+
+    const labels = {
+      founder: "Idealizadora",
+      therapist: "Terapeuta",
+      staff: "Funcionário",
+    };
+
+    return (
+      <div className="flex items-center gap-2">
+        {featured && <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />}
+        <Badge className={colors[type as keyof typeof colors]}>
+          {labels[type as keyof typeof labels]}
+        </Badge>
+      </div>
+    );
+  };
+
+  const getMemberTypeIcon = (type: string) => {
+    switch (type) {
+      case 'founder':
+        return <Star className="w-5 h-5 text-purple-600" />;
+      case 'therapist':
+        return <User className="w-5 h-5 text-blue-600" />;
+      case 'staff':
+        return <Briefcase className="w-5 h-5 text-gray-600" />;
+      default:
+        return <User className="w-5 h-5" />;
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
@@ -87,9 +123,8 @@ const AdminEquipe = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
                     <GripVertical className="w-5 h-5 text-muted-foreground cursor-move" />
-                    <Badge variant={member.is_active ? "default" : "secondary"}>
-                      {member.is_active ? "Ativo" : "Inativo"}
-                    </Badge>
+                    {getMemberTypeIcon(member.member_type)}
+                    {getMemberTypeBadge(member.member_type, member.is_featured)}
                   </div>
                 </div>
               </CardHeader>
@@ -125,6 +160,7 @@ const AdminEquipe = () => {
                 )}
                 <div className="flex gap-2 justify-center">
                   <Button
+                    type="button"
                     variant="ghost"
                     size="icon"
                     onClick={() => handleToggleActive(member)}
@@ -137,6 +173,7 @@ const AdminEquipe = () => {
                     )}
                   </Button>
                   <Button
+                    type="button"
                     variant="ghost"
                     size="icon"
                     onClick={() => navigate(`/admin/equipe/${member.id}/edit`)}
@@ -145,7 +182,7 @@ const AdminEquipe = () => {
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon">
+                      <Button type="button" variant="ghost" size="icon">
                         <Trash2 className="w-4 h-4 text-destructive" />
                       </Button>
                     </AlertDialogTrigger>

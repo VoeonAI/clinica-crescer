@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { staffService } from "@/services/staffService";
+import { staffService, MemberType } from "@/services/staffService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { showSuccess, showError } from "@/utils/toast";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Upload, Star, User, Briefcase } from "lucide-react";
 
 const AdminEquipeNew = () => {
   const navigate = useNavigate();
@@ -23,9 +24,12 @@ const AdminEquipeNew = () => {
     specialties: "",
     display_order: 0,
     is_active: true,
+    member_type: "therapist" as MemberType,
+    is_featured: false,
   });
 
   const [loading, setLoading] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   useEffect(() => {
     if (isEditing && id) {
@@ -44,6 +48,8 @@ const AdminEquipeNew = () => {
         specialties: data.specialties?.join(", ") || "",
         display_order: data.display_order,
         is_active: data.is_active,
+        member_type: data.member_type,
+        is_featured: data.is_featured,
       });
     } catch (error) {
       showError("Erro ao carregar membro");
@@ -78,6 +84,19 @@ const AdminEquipeNew = () => {
       showError("Erro ao salvar membro");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePhotoUpload = async (file: File) => {
+    setUploadingPhoto(true);
+    try {
+      const imageUrl = await staffService.uploadMemberImage(file);
+      setFormData({ ...formData, photo_url: imageUrl });
+      showSuccess("Foto enviada com sucesso!");
+    } catch (error: any) {
+      showError(error.message || "Erro ao enviar foto");
+    } finally {
+      setUploadingPhoto(false);
     }
   };
 
@@ -142,15 +161,22 @@ const AdminEquipeNew = () => {
               />
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="photo">URL da Foto</Label>
-                <Input
-                  id="photo"
-                  value={formData.photo_url}
-                  onChange={(e) => setFormData({ ...formData, photo_url: e.target.value })}
-                  placeholder="https://..."
-                />
+                <Label htmlFor="member_type">Tipo de Membro *</Label>
+                <Select
+                  value={formData.member_type}
+                  onValueChange={(value: MemberType) => setFormData({ ...formData, member_type: value })}
+                >
+                  <SelectTrigger id="member_type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="founder">Idealizadora</SelectItem>
+                    <SelectItem value="therapist">Terapeuta</SelectItem>
+                    <SelectItem value="staff">Funcionário</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="order">Ordem de Exibição</Label>
@@ -163,18 +189,101 @@ const AdminEquipeNew = () => {
                   }
                 />
               </div>
+              <div className="flex items-center space-x-2 pt-6">
+                <Switch
+                  id="active"
+                  checked={formData.is_active}
+                  onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+                />
+                <Label htmlFor="active" className="text-sm">
+                  Membro Ativo
+                </Label>
+              </div>
             </div>
 
             <div className="flex items-center space-x-2">
               <Switch
-                id="active"
-                checked={formData.is_active}
-                onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+                id="featured"
+                checked={formData.is_featured}
+                onCheckedChange={(checked) => setFormData({ ...formData, is_featured: checked })}
               />
-              <Label htmlFor="active" className="text-sm">
-                Membro Ativo
+              <Label htmlFor="featured" className="text-sm flex items-center gap-2">
+                <Star className="w-4 h-4 text-yellow-500" />
+                Destaque Principal
               </Label>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Foto do Membro</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="photo-upload">Upload de Foto</Label>
+              <div className="flex gap-2 mt-2">
+                <Input
+                  id="photo-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    e.preventDefault();
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      handlePhotoUpload(file);
+                    }
+                  }}
+                  className="flex-1"
+                  disabled={uploadingPhoto}
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={uploadingPhoto}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById("photo-upload")?.click();
+                  }}
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  {uploadingPhoto ? "Enviando..." : "Enviar"}
+                </Button>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="photo-url">OU URL da Foto</Label>
+              <Input
+                id="photo-url"
+                value={formData.photo_url}
+                onChange={(e) => setFormData({ ...formData, photo_url: e.target.value })}
+                placeholder="https://..."
+              />
+            </div>
+            {formData.photo_url && (
+              <div className="relative">
+                <img
+                  src={formData.photo_url}
+                  alt="Preview da foto"
+                  className="w-48 h-48 object-cover rounded-lg border mx-auto"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  className="absolute top-2 right-2"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setFormData({ ...formData, photo_url: "" });
+                  }}
+                >
+                  Remover
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 

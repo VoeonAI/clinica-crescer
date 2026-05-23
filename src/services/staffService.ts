@@ -1,5 +1,9 @@
 import { supabase } from '@/lib/supabaseClient';
 
+const MEMBERS_BUCKET = 'members';
+
+export type MemberType = 'founder' | 'therapist' | 'staff';
+
 export type StaffMember = {
   id: string;
   name: string;
@@ -9,6 +13,8 @@ export type StaffMember = {
   specialties?: string[];
   display_order: number;
   is_active: boolean;
+  member_type: MemberType;
+  is_featured: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -22,6 +28,8 @@ export const staffService = {
       .from('staff_members')
       .select('*')
       .eq('is_active', true)
+      .order('is_featured', { ascending: false })
+      .order('member_type', { ascending: true })
       .order('display_order', { ascending: true });
 
     if (error) throw error;
@@ -90,5 +98,31 @@ export const staffService = {
     );
 
     await Promise.all(promises);
+  },
+
+  async uploadMemberImage(file: File): Promise<string> {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+    const filePath = `members/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(MEMBERS_BUCKET)
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (uploadError) {
+      if (uploadError.message.includes('The resource was not found') || uploadError.message.includes('not found')) {
+        throw new Error('O bucket "members" não foi encontrado no Supabase Storage. Verifique se o bucket foi criado corretamente.');
+      }
+      throw new Error(uploadError.message || 'Erro ao enviar imagem.');
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from(MEMBERS_BUCKET)
+      .getPublicUrl(filePath);
+
+    return publicUrl;
   },
 };
