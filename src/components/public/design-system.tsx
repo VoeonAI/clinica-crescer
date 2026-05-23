@@ -145,16 +145,34 @@ export function Button({
     lg: "h-14 px-7 text-base",
   };
 
+  const buttonClassName = cn(
+    "inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8d63c7] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60",
+    variants[variant],
+    sizes[size],
+    className,
+  );
+
+  if (asChild) {
+    const onlyChild = React.Children.only(children);
+    const childWithArrow =
+      withArrow && React.isValidElement<{ children?: React.ReactNode }>(onlyChild)
+        ? React.cloneElement(onlyChild, undefined, (
+            <>
+              {onlyChild.props.children}
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </>
+          ))
+        : onlyChild;
+
+    return (
+      <Comp className={buttonClassName} {...props}>
+        {childWithArrow}
+      </Comp>
+    );
+  }
+
   return (
-    <Comp
-      className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8d63c7] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60",
-        variants[variant],
-        sizes[size],
-        className,
-      )}
-      {...props}
-    >
+    <Comp className={buttonClassName} {...props}>
       {children}
       {withArrow && <ArrowRight className="h-4 w-4" aria-hidden="true" />}
     </Comp>

@@ -81,5 +81,11 @@ export type ClinicTheme = typeof clinicTheme;
 export const siteImageUrl = (path?: string | null) => {
   if (!path) return "";
   if (/^https?:\/\//i.test(path)) return path;
-  return `${clinicTheme.assets.publicBaseUrl}/${path.replace(/^\/+/, "")}`;
+  const encodedPath = path
+    .replace(/^\/+/, "")
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+
+  return `${clinicTheme.assets.publicBaseUrl}/${encodedPath}`;
 };
