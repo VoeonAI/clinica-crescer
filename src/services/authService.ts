@@ -5,31 +5,42 @@ export type Role = 'master' | 'editor' | 'viewer';
 
 export const authService = {
   async createInvite(email: string, role: Role, fullName: string) {
-    // Cria o usuário no Supabase Auth
-    const { data: { user }, error: authError } = await supabase.auth.signUp({
-      email,
-      password: Math.random().toString(36).slice(-8), // Senha temporária
-      options: {
-        data: {
-          full_name: fullName,
-          role: role,
-        },
-      },
-    });
-
-    if (authError) throw authError;
-
-    if (user) {
-      // O perfil será criado automaticamente pelo trigger
-      return {
-        id: user.id,
-        email,
-        full_name: fullName,
-        role,
-      };
+    // Obter sessão atual
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      throw new Error('Not authenticated');
     }
 
-    throw new Error('Failed to create user');
+    // Chamar Edge Function
+    const { data, error } = await supabase.functions.invoke('create-admin-user', {
+      body: {
+        email,
+        password: Math.random().toString(36).slice(-8), // Senha temporária
+        role,
+        full_name: fullName
+      },
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
+      }
+    });
+
+    if (error) {
+      // Tratar erro de email já existente
+      if (error.message.includes('Email already registered') || error.status === 409) {
+        throw new Error('Este e-mail já está cadastrado no sistema.');
+      }
+      
+      console.error('Error creating user via edge function:', error);
+      throw error;
+    }
+
+    return {
+      id: data.user.id,
+      email,
+      full_name: fullName,
+      role,
+    };
   },
 
   async deleteUser(id: string) {

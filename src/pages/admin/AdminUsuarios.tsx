@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Mail, Shield, Trash2 } from "lucide-react";
+import { Plus, Mail, Shield, Trash2, Key } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import { PermissionGate } from "@/components/PermissionGate";
 import {
@@ -28,6 +28,7 @@ const AdminUsuarios = () => {
   const [newUser, setNewUser] = useState({
     email: "",
     fullName: "",
+    password: "",
     role: "editor" as "master" | "editor" | "viewer",
   });
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -56,7 +57,7 @@ const AdminUsuarios = () => {
       await authService.createInvite(newUser.email, newUser.role, newUser.fullName);
       showSuccess("Usuário criado com sucesso. Uma senha temporária foi enviada por email.");
       setDialogOpen(false);
-      setNewUser({ email: "", fullName: "", role: "editor" });
+      setNewUser({ email: "", fullName: "", password: "", role: "editor" });
       loadUsers();
     } catch (error: any) {
       showError(error.message || "Erro ao criar usuário");
@@ -125,6 +126,36 @@ const AdminUsuarios = () => {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="password">Senha Temporária *</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="password"
+                      type="password"
+                      value={newUser.password}
+                      onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                      placeholder="Mínimo 8 caracteres"
+                      required
+                      minLength={8}
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        const tempPassword = Math.random().toString(36).slice(-8);
+                        setNewUser({ ...newUser, password: tempPassword });
+                      }}
+                      title="Gerar senha aleatória"
+                    >
+                      <Key className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    O usuário deverá alterar esta senha após o primeiro login.
+                  </p>
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="role">Função *</Label>
                   <Select
                     value={newUser.role}
@@ -146,7 +177,7 @@ const AdminUsuarios = () => {
                     variant="outline"
                     onClick={() => {
                       setDialogOpen(false);
-                      setNewUser({ email: "", fullName: "", role: "editor" });
+                      setNewUser({ email: "", fullName: "", password: "", role: "editor" });
                     }}
                   >
                     Cancelar
