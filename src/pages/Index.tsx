@@ -1,859 +1,582 @@
-import { PublicPage } from "@/components/PublicPage";
-import { SEOHead } from "@/components/SEOHead";
-import { MedicalClinicSchema, FAQSchema } from "@/components/Schemas";
-import { Calendar, CheckCircle2, ArrowRight, BookOpen } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import {
+  ArrowRight,
+  BookOpen,
+  Brain,
+  CheckCircle2,
+  HeartHandshake,
+  Puzzle,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
+
+import { SEOHead } from "@/components/SEOHead";
+import { FAQSchema, MedicalClinicSchema } from "@/components/Schemas";
+import {
+  Badge,
+  Button,
+  Card,
+  Container,
+  CTABox,
+  Heading,
+  PatternOverlay,
+  Section,
+  SectionDivider,
+  SoftBackground,
+} from "@/components/public";
+import { siteImageUrl } from "@/styles/theme";
 import { blogService, BlogPost } from "@/services/blogService";
-import { Skeleton } from "@/components/ui/skeleton";
+import { staffService, StaffMember } from "@/services/staffService";
+import { cn } from "@/lib/utils";
+
+const services = [
+  {
+    title: "Avaliacao Neuropsicologica",
+    description:
+      "Investigacao cuidadosa das habilidades cognitivas, emocionais e comportamentais para orientar decisoes clinicas e escolares.",
+    href: "/avaliacao-neuropsicologica",
+    icon: Brain,
+    tone: "lilac" as const,
+  },
+  {
+    title: "Terapia ABA",
+    description:
+      "Intervencao baseada em evidencias para desenvolver comunicacao, autonomia, aprendizagem e habilidades sociais.",
+    href: "/terapia-aba",
+    icon: Puzzle,
+    tone: "blue" as const,
+  },
+  {
+    title: "Orientacao Familiar",
+    description:
+      "Acolhimento e estrategias praticas para que a familia participe do processo com seguranca e clareza.",
+    href: "/orientacao-parental",
+    icon: HeartHandshake,
+    tone: "warm" as const,
+  },
+  {
+    title: "Desenvolvimento Infantil",
+    description:
+      "Olhar integral para marcos do desenvolvimento, comportamento, linguagem, rotina e participacao social.",
+    href: "/como-saber-se-meu-filho-precisa-de-ajuda",
+    icon: Sparkles,
+    tone: "coral" as const,
+  },
+];
+
+const alertSigns = [
+  "Atrasos na fala, linguagem ou comunicacao",
+  "Pouco contato visual ou dificuldade de interacao",
+  "Crises frequentes, rigidez ou seletividade intensa",
+  "Dificuldades escolares persistentes",
+  "Regressao de habilidades ja adquiridas",
+  "Duvidas da familia sobre desenvolvimento ou comportamento",
+];
+
+const faqData = [
+  {
+    question: "Quando procurar avaliacao para uma crianca?",
+    answer:
+      "Vale procurar avaliacao quando ha atrasos em marcos do desenvolvimento, dificuldades de aprendizagem, alteracoes importantes de comportamento, suspeita de TEA, TDAH ou quando a familia sente que precisa entender melhor o desenvolvimento da crianca.",
+  },
+  {
+    question: "A Clinica Crescer atende quais publicos?",
+    answer:
+      "A Clinica Crescer acompanha criancas, adolescentes e familias, com foco em desenvolvimento infantil, avaliacao neuropsicologica, terapia ABA, orientacao familiar e intervencoes multidisciplinares.",
+  },
+  {
+    question: "Como funciona a primeira etapa de atendimento?",
+    answer:
+      "O processo costuma comecar com escuta da familia, levantamento de historico, compreensao da rotina e definicao do melhor caminho: avaliacao, intervencao, orientacao familiar ou encaminhamento complementar.",
+  },
+  {
+    question: "A familia participa do tratamento?",
+    answer:
+      "Sim. A familia e parte essencial do processo. O objetivo e transformar o que acontece na clinica em estrategias possiveis para casa, escola e vida diaria.",
+  },
+  {
+    question: "Terapia ABA e indicada apenas para autismo?",
+    answer:
+      "Nao. A ABA e muito utilizada em casos de TEA, mas seus principios tambem podem apoiar desenvolvimento de habilidades, comportamento, comunicacao e autonomia em diferentes perfis, sempre com plano individualizado.",
+  },
+];
+
+const HomeImage = ({
+  src,
+  alt,
+  className,
+  priority = false,
+}: {
+  src?: string | null;
+  alt: string;
+  className?: string;
+  priority?: boolean;
+}) => {
+  const [failed, setFailed] = useState(false);
+  const resolvedSrc = src ? siteImageUrl(src) : "";
+
+  if (!resolvedSrc || failed) {
+    return (
+      <div
+        role="img"
+        aria-label={alt}
+        className={cn(
+          "flex min-h-[320px] items-center justify-center rounded-[32px] bg-gradient-to-br from-[#f8f2ff] via-white to-[#fff3c7]",
+          className,
+        )}
+      >
+        <div className="h-24 w-24 rounded-full bg-white/70 shadow-[0_22px_70px_rgba(62,46,89,0.12)]" />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={resolvedSrc}
+      alt={alt}
+      loading={priority ? "eager" : "lazy"}
+      fetchPriority={priority ? "high" : "auto"}
+      onError={() => setFailed(true)}
+      className={cn("h-full w-full rounded-[32px] object-cover", className)}
+    />
+  );
+};
 
 const Index = () => {
   const [latestPosts, setLatestPosts] = useState<BlogPost[]>([]);
-  const [loadingPosts, setLoadingPosts] = useState(true);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
+  const [loadingContent, setLoadingContent] = useState(true);
 
   useEffect(() => {
-    loadLatestPosts();
+    let mounted = true;
+
+    const loadHomeContent = async () => {
+      try {
+        const [postsData, staffData] = await Promise.all([
+          blogService.getPublishedPosts(),
+          staffService.getActiveStaff(),
+        ]);
+
+        if (!mounted) return;
+        setLatestPosts(postsData.slice(0, 3));
+        setStaff(staffData);
+      } catch (error) {
+        console.error("Error loading home content:", error);
+      } finally {
+        if (mounted) setLoadingContent(false);
+      }
+    };
+
+    loadHomeContent();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  const loadLatestPosts = async () => {
-    try {
-      const data = await blogService.getPublishedPosts();
-      setLatestPosts(data.slice(0, 3));
-    } catch (error) {
-      console.error("Error loading latest posts:", error);
-    } finally {
-      setLoadingPosts(false);
-    }
-  };
+  const founder = useMemo(() => {
+    return (
+      staff.find((member) => member.is_featured) ||
+      staff.find((member) => member.member_type === "founder") ||
+      staff[0]
+    );
+  }, [staff]);
 
-  const faqData = [{
-    question: "Como saber se meu filho precisa de avaliação?",
-    answer: "Se você observar atrasos em marcos do desenvolvimento, dificuldades de aprendizagem, problemas de comportamento ou se simplesmente tiver preocupações, vale a pena buscar uma avaliação especializada. A intervenção precoce é fundamental."
-  }, {
-    question: "Qual a idade mínima para iniciar o acompanhamento?",
-    answer: "Trabalhamos com crianças e adolescentes. Quanto mais cedo a intervenção começar, melhores os resultados. Para crianças muito pequenas, focamos em desenvolvimento e orientação familiar."
-  }, {
-    question: "Como a família participa do processo?",
-    answer: "A família é essencial. Realizamos sessões de orientação parental, ensinamos estratégias para aplicar em casa, e mantemos comunicação constante. A terapia continua no dia a dia através das práticas aprendidas."
-  }, {
-    question: "Quanto tempo dura o tratamento?",
-    answer: "Varia de acordo com as necessidades de cada pessoa. Alguns acompanhamentos são curtos e focados, outros podem ser mais prolongados. Trabalhamos sempre com metas claras e revisões periódicas."
-  }];
+  const visibleTeam = useMemo(() => {
+    return staff.filter((member) => member.id !== founder?.id).slice(0, 6);
+  }, [founder?.id, staff]);
+
+  const homeSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: "Clinica Crescer",
+    description:
+      "Clinica especializada em desenvolvimento infantil, avaliacao neuropsicologica, terapia ABA e orientacao familiar.",
+    mainEntity: faqData.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
+    })),
+  };
 
   return (
     <>
       <SEOHead
-        title="Clínica Crescer | Intervenção que faz sentido fora da clínica"
-        description="Na Clínica Crescer, a terapia não termina na sessão. Transformamos intervenção especializada em evolução funcional na vida real, com participação ativa da família e decisões baseadas em dados."
-        keywords="clínica infantil, desenvolvimento infantil, terapia ABA, neuropsicologia, intervenção precoce"
+        title="Clinica Crescer | Desenvolvimento infantil com cuidado e ciencia"
+        description="A Clinica Crescer oferece avaliacao neuropsicologica, terapia ABA, orientacao familiar e acompanhamento multidisciplinar para criancas, adolescentes e familias."
+        keywords="clinica crescer, desenvolvimento infantil, avaliacao neuropsicologica, terapia ABA, orientacao familiar, sinais de alerta infantil, neuropsicologia infantil"
+        ogImage={siteImageUrl("home/clinica-crescer-og.jpg")}
+        ogType="website"
+        schema={homeSchema}
       />
       <MedicalClinicSchema />
+      <FAQSchema faqs={faqData} />
 
-      {/* Hero Section */}
-      <section className="bg-primary text-primary-foreground py-20 md:py-32">
-        <div className="container mx-auto px-4 text-center max-w-4xl">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-            Intervenção que faz sentido fora da clínica.
-          </h1>
-          <p className="text-xl md:text-2xl mb-8 leading-relaxed opacity-90">
-            Na Clínica Crescer, a terapia não termina na sessão. Nós transformamos 
-            intervenção especializada em evolução funcional na vida real, com participação 
-            ativa da família e decisões baseadas em dados.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/precisa-de-ajuda"
-              className="inline-flex items-center justify-center bg-white text-primary px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-            >
-              Preciso de Ajuda
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Link>
-            <Link
-              to="/sobre"
-              className="inline-flex items-center justify-center bg-primary-foreground/20 text-primary-foreground px-8 py-4 rounded-lg font-semibold hover:bg-primary-foreground/30 transition-colors border border-primary-foreground/30"
-            >
-              Conhecer a Clínica
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Para quem é */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-              Para quem é a Clínica Crescer?
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Oferecemos suporte especializado para crianças e adolescentes que enfrentam 
-              desafios no desenvolvimento, bem como para suas famílias.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="border rounded-lg p-8 hover:shadow-lg transition-shadow">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-6">
-                <span className="text-2xl">🧒</span>
+      <main className="bg-[#fbfafc] text-[#262033]">
+        <Section className="min-h-[calc(100vh-4rem)] bg-[linear-gradient(180deg,#fbfafc_0%,#ffffff_56%,#f8f2ff_100%)] pt-16 md:pt-20" spacing="compact">
+          <Container className="grid items-center gap-12 lg:grid-cols-[1.02fr_0.98fr]">
+            <div className="relative z-10">
+              <Badge tone="warm" className="mb-6">
+                Desenvolvimento infantil com ciencia, escuta e presenca
+              </Badge>
+              <Heading
+                level={1}
+                title="Cuidar do desenvolvimento e tambem cuidar da familia."
+                description="Na Clinica Crescer, avaliacao e intervencao se encontram com acolhimento humano para transformar duvidas em caminhos claros para a vida real."
+                descriptionClassName="text-lg sm:text-xl"
+              />
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Button asChild size="lg" withArrow>
+                  <Link to="/como-saber-se-meu-filho-precisa-de-ajuda">Preciso de ajuda</Link>
+                </Button>
+                <Button asChild size="lg" variant="secondary">
+                  <Link to="/sobre">Conhecer a clinica</Link>
+                </Button>
               </div>
-              <h3 className="text-xl font-bold mb-4 text-primary">Crianças</h3>
-              <p className="text-muted-foreground mb-4">
-                Crianças que apresentam atrasos no desenvolvimento, dificuldades de 
-                aprendizagem, desafios comportamentais ou questões socioemocionais.
-              </p>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                  <span>Atrasos na fala ou linguagem</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                  <span>Dificuldades na interação social</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                  <span>Problemas de atenção e foco</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="border rounded-lg p-8 hover:shadow-lg transition-shadow">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-6">
-                <span className="text-2xl">👩</span>
-              </div>
-              <h3 className="text-xl font-bold mb-4 text-primary">Adolescentes</h3>
-              <p className="text-muted-foreground mb-4">
-                Adolescentes que enfrentam desafios emocionais, sociais, acadêmicos 
-                ou de comportamento durante essa fase de transição.
-              </p>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                  <span>Ansiedade e depressão</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                  <span>Dificuldades escolares</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                  <span>Questões de identidade</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="border rounded-lg p-8 hover:shadow-lg transition-shadow">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-6">
-                <span className="text-2xl">👨‍👩‍👧</span>
-              </div>
-              <h3 className="text-xl font-bold mb-4 text-primary">Famílias</h3>
-              <p className="text-muted-foreground mb-4">
-                Pais e cuidadores que buscam orientação, estratégias e suporte 
-                para lidar com os desafios do desenvolvimento infantil.
-              </p>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                  <span>Orientação parental</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                  <span>Estratégias para casa</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                  <span>Suporte emocional</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Quando é hora de investigar */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-primary mb-6">
-                Quando é hora de investigar?
-              </h2>
-              <p className="text-lg text-muted-foreground mb-6">
-                Identificar sinais de alerta no desenvolvimento infantil é fundamental 
-                para uma intervenção precoce e eficaz. Conheça os principais indicadores 
-                que merecem atenção profissional.
-              </p>
-              <Link
-                to="/precisa-de-ajuda"
-                className="inline-flex items-center text-primary font-semibold hover:underline"
-              >
-                Ver lista completa de sinais de alerta
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Link>
-            </div>
-
-            <div className="space-y-4">
-              <div className="bg-white border rounded-lg p-6">
-                <h3 className="font-bold text-lg mb-2 text-primary">
-                  0-12 meses
-                </h3>
-                <p className="text-muted-foreground text-sm">
-                  Não sorri aos 3 meses, não segue objetos com o olhar, não balbucia 
-                  aos 6 meses ou não senta com apoio aos 8 meses.
-                </p>
-              </div>
-
-              <div className="bg-white border rounded-lg p-6">
-                <h3 className="font-bold text-lg mb-2 text-primary">
-                  12-24 meses
-                </h3>
-                <p className="text-muted-foreground text-sm">
-                  Não anda aos 18 meses, não fala palavras simples, não aponta para 
-                  objetos ou não faz contato visual.
-                </p>
-              </div>
-
-              <div className="bg-white border rounded-lg p-6">
-                <h3 className="font-bold text-lg mb-2 text-primary">
-                  2-3 anos
-                </h3>
-                <p className="text-muted-foreground text-sm">
-                  Não forma frases simples, não brinca de faz-de-conta, não interage 
-                  com outras crianças ou apresenta regressão de habilidades.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* O que uma avaliação pode esclarecer */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-              O que uma avaliação pode esclarecer
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              A avaliação neuropsicológica é um processo detalhado que investiga o 
-              funcionamento cognitivo, emocional e comportamental.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">🧠</span>
-              </div>
-              <h3 className="font-bold text-lg mb-2 text-primary">
-                Funções Cognitivas
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Atenção, memória, raciocínio e resolução de problemas
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">💬</span>
-              </div>
-              <h3 className="font-bold text-lg mb-2 text-primary">
-                Linguagem
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Compreensão, expressão, leitura e escrita
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">🎯</span>
-              </div>
-              <h3 className="font-bold text-lg mb-2 text-primary">
-                Funções Executivas
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Planejamento, organização e controle de impulsos
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">🏃</span>
-              </div>
-              <h3 className="font-bold text-lg mb-2 text-primary">
-                Habilidades Motoras
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Coordenação, velocidade e precisão de movimentos
-              </p>
-            </div>
-          </div>
-
-          <div className="text-center mt-12">
-            <Link
-              to="/avaliacao-neuropsicologica"
-              className="inline-flex items-center justify-center bg-primary text-primary-foreground px-8 py-4 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
-            >
-              Saiba mais sobre Avaliação Neuropsicológica
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Como funciona */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-              Como funciona nosso processo
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Um caminho estruturado, transparente e colaborativo para promover o 
-              desenvolvimento funcional de cada criança e adolescente.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-4 gap-6">
-            <div className="relative">
-              <div className="bg-white border rounded-lg p-6 h-full">
-                <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center mb-4 text-2xl font-bold">
-                  1
-                </div>
-                <h3 className="font-bold text-lg mb-3 text-primary">
-                  Anamnese
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Entrevista com os pais para entender o histórico de desenvolvimento, 
-                  saúde, escolaridade e contexto familiar.
-                </p>
-              </div>
-            </div>
-
-            <div className="relative">
-              <div className="bg-white border rounded-lg p-6 h-full">
-                <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center mb-4 text-2xl font-bold">
-                  2
-                </div>
-                <h3 className="font-bold text-lg mb-3 text-primary">
-                  Avaliação
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Aplicação de testes padronizados e observações em sessões individuais 
-                  com a criança ou adolescente.
-                </p>
-              </div>
-            </div>
-
-            <div className="relative">
-              <div className="bg-white border rounded-lg p-6 h-full">
-                <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center mb-4 text-2xl font-bold">
-                  3
-                </div>
-                <h3 className="font-bold text-lg mb-3 text-primary">
-                  Análise
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Profissional analisa os dados e prepara um relatório detalhado com 
-                  diagnóstico ou hipóteses diagnósticas.
-                </p>
-              </div>
-            </div>
-
-            <div className="relative">
-              <div className="bg-white border rounded-lg p-6 h-full">
-                <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center mb-4 text-2xl font-bold">
-                  4
-                </div>
-                <h3 className="font-bold text-lg mb-3 text-primary">
-                  Devolutiva
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Reunião com os pais para apresentar resultados, tirar dúvidas e 
-                  definir plano de intervenção.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* O que muda na vida real */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-              O que muda na vida real
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Não buscamos mudanças apenas na clínica. Nosso objetivo é transformar 
-              a vida diária da criança, da família e da escola.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-4xl">🏠</span>
-              </div>
-              <h3 className="font-bold text-xl mb-3 text-primary">
-                Em Casa
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                Melhor na rotina de sono e alimentação, menos conflitos, maior 
-                autonomia nas atividades diárias e relação familiar mais harmoniosa.
-              </p>
-              <ul className="text-sm text-left space-y-2 text-muted-foreground">
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-green-600" />
-                  <span>Rotinas mais tranquilas</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-green-600" />
-                  <span>Menos birras e crises</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-green-600" />
-                  <span>Maior independência</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="text-center">
-              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-4xl">📚</span>
-              </div>
-              <h3 className="font-bold text-xl mb-3 text-primary">
-                Na Escola
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                Melhor desempenho acadêmico, maior engajamento nas atividades, 
-                melhor relação com colegas e professores, e adaptações quando necessárias.
-              </p>
-              <ul className="text-sm text-left space-y-2 text-muted-foreground">
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-blue-600" />
-                  <span>Aprendizagem mais eficiente</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-blue-600" />
-                  <span>Melhor concentração</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-blue-600" />
-                  <span>Socialização positiva</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="text-center">
-              <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-4xl">😊</span>
-              </div>
-              <h3 className="font-bold text-xl mb-3 text-primary">
-                Na Vida Social
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                Habilidades sociais mais desenvolvidas, maior confiança, melhor 
-                regulação emocional e maior capacidade de lidar com novas situações.
-              </p>
-              <ul className="text-sm text-left space-y-2 text-muted-foreground">
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-purple-600" />
-                  <span>Comunicação eficaz</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-purple-600" />
-                  <span>Autoconfiança</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-purple-600" />
-                  <span>Resiliência emocional</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Diferenciais */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-              Por que escolher a Clínica Crescer?
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Nossa abordagem única combina evidência científica, acolhimento 
-              humano e foco em resultados funcionais.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="bg-white border rounded-lg p-6">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <span className="text-2xl">📊</span>
-              </div>
-              <h3 className="font-bold text-lg mb-3 text-primary">
-                Decisões Baseadas em Dados
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Utilizamos avaliações padronizadas e métricas objetivas para entender 
-                as necessidades de cada criança e acompanhar a evolução ao longo do tempo.
-              </p>
-            </div>
-
-            <div className="bg-white border rounded-lg p-6">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <span className="text-2xl">👨‍👩‍👧</span>
-              </div>
-              <h3 className="font-bold text-lg mb-3 text-primary">
-                Família como Parceira
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                A família é essencial no processo. Enviamos estratégias, realizamos 
-                orientações e mantemos comunicação constante para integrar a terapia 
-                no dia a dia.
-              </p>
-            </div>
-
-            <div className="bg-white border rounded-lg p-6">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <span className="text-2xl">🔬</span>
-              </div>
-              <h3 className="font-bold text-lg mb-3 text-primary">
-                Base Científica
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Todas as nossas intervenções são fundamentadas em evidências científicas 
-                atualizadas, garantindo práticas eficazes e seguras.
-              </p>
-            </div>
-
-            <div className="bg-white border rounded-lg p-6">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <span className="text-2xl">🎯</span>
-              </div>
-              <h3 className="font-bold text-lg mb-3 text-primary">
-                Foco Funcional
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Não trabalhamos apenas sintomas. Nosso objetivo é promover evolução 
-                funcional que se reflita na vida real da criança e da família.
-              </p>
-            </div>
-
-            <div className="bg-white border rounded-lg p-6">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <span className="text-2xl">🤝</span>
-              </div>
-              <h3 className="font-bold text-lg mb-3 text-primary">
-                Abordagem Multidisciplinar
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Equipe de profissionais de diferentes áreas trabalhando de forma 
-                integrada para uma visão completa do desenvolvimento.
-              </p>
-            </div>
-
-            <div className="bg-white border rounded-lg p-6">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <span className="text-2xl">💙</span>
-              </div>
-              <h3 className="font-bold text-lg mb-3 text-primary">
-                Acolhimento e Respeito
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Valorizamos a diversidade, respeitamos as individualidades e criamos 
-                um ambiente seguro e acolhedor para crianças e famílias.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Cards para páginas internas */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-              Conheça nossos serviços
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Oferecemos uma gama completa de serviços especializados para atender 
-              às diferentes necessidades de desenvolvimento.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Link
-              to="/avaliacao-neuropsicologica"
-              className="group border rounded-lg p-8 hover:shadow-lg transition-all hover:border-primary"
-            >
-              <div className="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                <span className="text-3xl">🧠</span>
-              </div>
-              <h3 className="font-bold text-xl mb-3 text-primary group-hover:underline">
-                Avaliação Neuropsicológica
-              </h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Investigação detalhada do funcionamento cognitivo, emocional e 
-                comportamental para identificar necessidades e potencialidades.
-              </p>
-              <span className="text-sm font-medium text-primary group-hover:underline flex items-center">
-                Saiba mais
-                <ArrowRight className="ml-1 w-4 h-4" />
-              </span>
-            </Link>
-
-            <Link
-              to="/terapia-aba"
-              className="group border rounded-lg p-8 hover:shadow-lg transition-all hover:border-primary"
-            >
-              <div className="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                <span className="text-3xl">🌟</span>
-              </div>
-              <h3 className="font-bold text-xl mb-3 text-primary group-hover:underline">
-                Terapia ABA
-              </h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Análise do Comportamento Aplicada: intervenção cientificamente 
-                comprovada para desenvolvimento infantil.
-              </p>
-              <span className="text-sm font-medium text-primary group-hover:underline flex items-center">
-                Saiba mais
-                <ArrowRight className="ml-1 w-4 h-4" />
-              </span>
-            </Link>
-
-            <Link
-              to="/adolescentes"
-              className="group border rounded-lg p-8 hover:shadow-lg transition-all hover:border-primary"
-            >
-              <div className="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                <span className="text-3xl">👩</span>
-              </div>
-              <h3 className="font-bold text-xl mb-3 text-primary group-hover:underline">
-                Atendimento para Adolescentes
-              </h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Suporte especializado para lidar com os desafios da adolescência, 
-                sempre com respeito e acolhimento.
-              </p>
-              <span className="text-sm font-medium text-primary group-hover:underline flex items-center">
-                Saiba mais
-                <ArrowRight className="ml-1 w-4 h-4" />
-              </span>
-            </Link>
-
-            <Link
-              to="/orientacao-parental"
-              className="group border rounded-lg p-8 hover:shadow-lg transition-all hover:border-primary"
-            >
-              <div className="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                <span className="text-3xl">💬</span>
-              </div>
-              <h3 className="font-bold text-xl mb-3 text-primary group-hover:underline">
-                Orientação Parental
-              </h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Apoio para pais na criação e educação dos filhos, fortalecendo o 
-                vínculo familiar.
-              </p>
-              <span className="text-sm font-medium text-primary group-hover:underline flex items-center">
-                Saiba mais
-                <ArrowRight className="ml-1 w-4 h-4" />
-              </span>
-            </Link>
-
-            <Link
-              to="/precisa-de-ajuda"
-              className="group border rounded-lg p-8 hover:shadow-lg transition-all hover:border-primary"
-            >
-              <div className="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                <span className="text-3xl">❓</span>
-              </div>
-              <h3 className="font-bold text-xl mb-3 text-primary group-hover:underline">
-                Precisa de Ajuda?
-              </h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Identifique sinais de alerta no desenvolvimento infantil e saiba 
-                quando procurar avaliação profissional.
-              </p>
-              <span className="text-sm font-medium text-primary group-hover:underline flex items-center">
-                Saiba mais
-                <ArrowRight className="ml-1 w-4 h-4" />
-              </span>
-            </Link>
-
-            <Link
-              to="/blog"
-              className="group border rounded-lg p-8 hover:shadow-lg transition-all hover:border-primary"
-            >
-              <div className="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                <BookOpen className="w-6 h-6" />
-              </div>
-              <h3 className="font-bold text-xl mb-3 text-primary group-hover:underline">
-                Blog
-              </h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Artigos, dicas e orientações sobre desenvolvimento infantil, 
-                neuropsicologia e terapia.
-              </p>
-              <span className="text-sm font-medium text-primary group-hover:underline flex items-center">
-                Ver artigos
-                <ArrowRight className="ml-1 w-4 h-4" />
-              </span>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-              Perguntas Frequentes
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              Tire suas dúvidas sobre nosso trabalho
-            </p>
-          </div>
-
-          <FAQSchema faqs={faqData} />
-
-          <div className="space-y-4">
-            {faqData.map((faq, index) => (
-              <details
-                key={index}
-                className="bg-white border rounded-lg group"
-              >
-                <summary className="flex items-center justify-between p-6 cursor-pointer hover:bg-gray-50 transition-colors">
-                  <h3 className="font-semibold text-lg text-primary pr-4">
-                    {faq.question}
-                  </h3>
-                  <ArrowRight className="w-5 h-5 text-muted-foreground group-open:rotate-90 transition-transform shrink-0" />
-                </summary>
-                <div className="px-6 pb-6 text-muted-foreground">
-                  <p>{faq.answer}</p>
-                </div>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Final */}
-      <section className="py-20 bg-primary text-primary-foreground">
-        <div className="container mx-auto px-4 text-center max-w-4xl">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Pronto para começar?
-          </h2>
-          <p className="text-xl mb-8 opacity-90">
-            Entre em contato conosco para agendar uma avaliação ou tirar suas dúvidas. 
-            Estamos aqui para ajudar sua família.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/quando-procurar-avaliacao"
-              className="inline-flex items-center justify-center bg-white text-primary px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-            >
-              Agendar Avaliação
-              <Calendar className="ml-2 w-5 h-5" />
-            </Link>
-            <Link
-              to="/sobre"
-              className="inline-flex items-center justify-center bg-primary-foreground/20 text-primary-foreground px-8 py-4 rounded-lg font-semibold hover:bg-primary-foreground/30 transition-colors border border-primary-foreground/30"
-            >
-              Conhecer a Clínica
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Últimos posts do blog */}
-      {latestPosts.length > 0 && (
-        <section className="py-20 bg-white">
-          <div className="container mx-auto px-4 max-w-6xl">
-            <div className="flex items-center justify-between mb-12">
-              <div>
-                <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-                  Últimas do Blog
-                </h2>
-                <p className="text-xl text-muted-foreground">
-                  Artigos e orientações sobre desenvolvimento infantil
-                </p>
-              </div>
-              <Link
-                to="/blog"
-                className="hidden md:inline-flex items-center text-primary font-semibold hover:underline"
-              >
-                Ver todos
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Link>
-            </div>
-
-            {loadingPosts ? (
-              <div className="grid md:grid-cols-3 gap-8">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="border rounded-lg p-6">
-                    <Skeleton className="h-48 w-full mb-4" />
-                    <Skeleton className="h-6 w-3/4 mb-2" />
-                    <Skeleton className="h-4 w-full mb-4" />
-                    <Skeleton className="h-4 w-1/2" />
+              <div className="mt-9 grid gap-3 text-sm text-[#5d546b] sm:grid-cols-3">
+                {["Equipe multidisciplinar", "Plano individualizado", "Familia como parceira"].map((item) => (
+                  <div key={item} className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-[#8d63c7]" />
+                    <span>{item}</span>
                   </div>
                 ))}
               </div>
-            ) : (
-              <div className="grid md:grid-cols-3 gap-8">
-                {latestPosts.map((post) => (
-                  <article
-                    key={post.id}
-                    className="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow group"
-                  >
-                    {post.cover_image && (
-                      <div className="h-48 overflow-hidden">
-                        <img
-                          src={post.cover_image}
-                          alt={post.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                        />
+            </div>
+
+            <div className="relative">
+              <div className="absolute -left-8 top-10 hidden h-24 w-24 rounded-[28px] bg-[#fff3c7] lg:block" />
+              <div className="absolute -right-5 bottom-16 hidden h-20 w-20 rounded-full bg-[#dff1ff] lg:block" />
+              <div className="relative overflow-hidden rounded-[36px] bg-white p-3 shadow-[0_22px_70px_rgba(62,46,89,0.12)]">
+                <HomeImage
+                  src="home/hero-familia.jpg"
+                  alt="Familia acolhida pela Clinica Crescer"
+                  priority
+                  className="aspect-[4/5] min-h-[440px]"
+                />
+                <div className="absolute bottom-6 left-6 right-6 rounded-[24px] bg-white/92 p-5 shadow-[0_14px_45px_rgba(62,46,89,0.1)] backdrop-blur">
+                  <div className="flex items-start gap-3">
+                    <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-[#8d63c7]" />
+                    <p className="text-sm leading-6 text-[#5d546b]">
+                      Um espaco para investigar, orientar e acompanhar cada crianca com respeito ao seu tempo.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Container>
+        </Section>
+
+        <Section tone="default">
+          <Container className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+            <Heading
+              eyebrow="Sobre a Clinica Crescer"
+              title="Um cuidado multidisciplinar, claro e profundamente humano."
+              description="A Clinica Crescer nasceu para apoiar familias que precisam compreender melhor o desenvolvimento de seus filhos, com olhar tecnico, linguagem acessivel e intervencoes que fazem sentido fora da sessao."
+            />
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[
+                "Avaliacao para orientar decisoes com mais seguranca.",
+                "Intervencoes conectadas a rotina da crianca e da familia.",
+                "Equipe integrada para enxergar o desenvolvimento por varios angulos.",
+                "Acompanhamento que valoriza vinculo, autonomia e qualidade de vida.",
+              ].map((item) => (
+                <Card key={item} interactive>
+                  <CheckCircle2 className="mb-5 h-5 w-5 text-[#8d63c7]" />
+                  <p className="text-sm leading-7 text-[#5d546b]">{item}</p>
+                </Card>
+              ))}
+            </div>
+            <div className="lg:col-start-2">
+              <Button asChild variant="ghost" withArrow>
+                <Link to="/sobre">Ler sobre nossa abordagem</Link>
+              </Button>
+            </div>
+          </Container>
+        </Section>
+
+        <Section tone="lilac">
+          <Container>
+            <div className="mb-12 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+              <Heading
+                eyebrow="Servicos"
+                title="Caminhos de cuidado para diferentes necessidades."
+                description="Cada familia chega com uma pergunta. Nosso papel e ajudar a transformar essa pergunta em avaliacao, plano e acompanhamento."
+              />
+              <Button asChild variant="secondary" withArrow className="md:mb-1">
+                <Link to="/avaliacao-neuropsicologica">Explorar servicos</Link>
+              </Button>
+            </div>
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+              {services.map((service) => {
+                const Icon = service.icon;
+                return (
+                  <Link key={service.title} to={service.href} className="group block">
+                    <Card tone={service.tone} interactive className="h-full">
+                      <div className="mb-7 flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-[0_14px_45px_rgba(62,46,89,0.08)]">
+                        <Icon className="h-5 w-5 text-[#8d63c7]" />
                       </div>
-                    )}
+                      <h3 className="text-xl font-semibold text-[#262033]">{service.title}</h3>
+                      <p className="mt-4 text-sm leading-7 text-[#5d546b]">{service.description}</p>
+                      <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#5b3d86]">
+                        Saiba mais <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      </span>
+                    </Card>
+                  </Link>
+                );
+              })}
+            </div>
+          </Container>
+        </Section>
+
+        <Section tone="default">
+          <Container>
+            <SoftBackground image="home/precisa-de-ajuda.jpg" fallbackTone="warm" className="p-6 sm:p-8 lg:p-12">
+              <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+                <div>
+                  <Badge tone="coral" className="mb-5">Precisa de ajuda?</Badge>
+                  <Heading
+                    title="Se algo no desenvolvimento preocupa, voce nao precisa esperar sozinho."
+                    description="Alguns sinais merecem uma escuta especializada. Buscar orientacao cedo pode trazer clareza, reduzir angustias e abrir caminhos mais gentis para a crianca."
+                    level={2}
+                  />
+                  <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                    <Button asChild withArrow>
+                      <Link to="/como-saber-se-meu-filho-precisa-de-ajuda">Ver sinais de alerta</Link>
+                    </Button>
+                    <Button asChild variant="secondary">
+                      <Link to="/quando-procurar-avaliacao">Quando procurar avaliacao</Link>
+                    </Button>
+                  </div>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {alertSigns.map((sign) => (
+                    <div key={sign} className="rounded-2xl bg-white/86 p-4 text-sm leading-6 text-[#5d546b] shadow-[0_14px_45px_rgba(62,46,89,0.07)]">
+                      <CheckCircle2 className="mb-3 h-4 w-4 text-[#e8795f]" />
+                      {sign}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </SoftBackground>
+          </Container>
+        </Section>
+
+        {founder && (
+          <Section tone="blue">
+            <Container className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+              <div className="relative">
+                <div className="absolute -left-5 -top-5 h-24 w-24 rounded-full bg-[#fff3c7]" />
+                <HomeImage
+                  src={founder.photo_url}
+                  alt={`${founder.name}, ${founder.role_title || "idealizadora da Clinica Crescer"}`}
+                  className="relative aspect-[4/5] min-h-[420px] shadow-[0_22px_70px_rgba(62,46,89,0.12)]"
+                />
+              </div>
+              <div>
+                <Badge tone="lilac" className="mb-5">Idealizadora em destaque</Badge>
+                <Heading
+                  title={founder.name}
+                  description={founder.role_title || "Profissional em destaque na Clinica Crescer."}
+                  level={2}
+                />
+                {founder.bio && (
+                  <p className="mt-6 max-w-2xl text-base leading-8 text-[#5d546b]">{founder.bio}</p>
+                )}
+                {founder.specialties && founder.specialties.length > 0 && (
+                  <div className="mt-7 flex flex-wrap gap-2">
+                    {founder.specialties.slice(0, 5).map((specialty) => (
+                      <Badge key={specialty} tone="blue">{specialty}</Badge>
+                    ))}
+                  </div>
+                )}
+                <Button asChild className="mt-8" variant="secondary" withArrow>
+                  <Link to="/equipe">Conhecer a equipe</Link>
+                </Button>
+              </div>
+            </Container>
+          </Section>
+        )}
+
+        <Section tone="default">
+          <Container>
+            <div className="mb-12 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+              <Heading
+                eyebrow="Equipe"
+                title="Profissionais que olham para a crianca inteira."
+                description="Uma equipe ativa, integrada e preparada para acolher diferentes necessidades do desenvolvimento."
+              />
+              <Button asChild variant="ghost" withArrow>
+                <Link to="/equipe">Ver equipe completa</Link>
+              </Button>
+            </div>
+
+            {loadingContent ? (
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {[1, 2, 3].map((item) => (
+                  <div key={item} className="h-80 animate-pulse rounded-[22px] bg-[#f8f2ff]" />
+                ))}
+              </div>
+            ) : visibleTeam.length > 0 ? (
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {visibleTeam.map((member) => (
+                  <article key={member.id} className="overflow-hidden rounded-[24px] border border-[#eee7f6] bg-white shadow-[0_14px_45px_rgba(62,46,89,0.08)]">
+                    <HomeImage
+                      src={member.photo_url}
+                      alt={`${member.name}, ${member.role_title || "profissional da Clinica Crescer"}`}
+                      className="aspect-[4/3] min-h-0 rounded-none"
+                    />
                     <div className="p-6">
-                      <h3 className="text-xl font-bold mb-3 text-primary group-hover:underline">
-                        <Link to={`/blog/${post.slug}`}>{post.title}</Link>
+                      <h3 className="text-xl font-semibold text-[#262033]">{member.name}</h3>
+                      {member.role_title && <p className="mt-2 text-sm font-medium text-[#8d63c7]">{member.role_title}</p>}
+                      {member.specialties && member.specialties.length > 0 && (
+                        <div className="mt-5 flex flex-wrap gap-2">
+                          {member.specialties.slice(0, 3).map((specialty) => (
+                            <Badge key={specialty} tone="lilac">{specialty}</Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <Card tone="lilac">
+                <p className="text-sm leading-7 text-[#5d546b]">
+                  A equipe ativa sera exibida aqui automaticamente quando os perfis estiverem cadastrados no CMS.
+                </p>
+              </Card>
+            )}
+          </Container>
+        </Section>
+
+        <Section tone="lilac">
+          <Container>
+            <div className="mb-12 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+              <Heading
+                eyebrow="Blog"
+                title="Conteudo para familias que querem entender antes de decidir."
+                description="Artigos sobre desenvolvimento infantil, sinais de alerta, avaliacao, intervencao e rotina familiar."
+              />
+              <Button asChild variant="secondary" withArrow>
+                <Link to="/blog">Ver todos os artigos</Link>
+              </Button>
+            </div>
+
+            {loadingContent ? (
+              <div className="grid gap-5 md:grid-cols-3">
+                {[1, 2, 3].map((item) => (
+                  <div key={item} className="h-96 animate-pulse rounded-[22px] bg-white/80" />
+                ))}
+              </div>
+            ) : latestPosts.length > 0 ? (
+              <div className="grid gap-5 md:grid-cols-3">
+                {latestPosts.map((post) => (
+                  <article key={post.id} className="group overflow-hidden rounded-[24px] border border-[#eee7f6] bg-white shadow-[0_14px_45px_rgba(62,46,89,0.08)]">
+                    <Link to={`/blog/${post.slug}`} aria-label={`Ler artigo ${post.title}`}>
+                      <HomeImage
+                        src={post.cover_image}
+                        alt={post.title}
+                        className="aspect-[16/10] min-h-0 rounded-none transition-transform duration-300 group-hover:scale-[1.03]"
+                      />
+                    </Link>
+                    <div className="p-6">
+                      <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#8d63c7]">Artigo</p>
+                      <h3 className="text-xl font-semibold leading-snug text-[#262033]">
+                        <Link to={`/blog/${post.slug}`} className="hover:text-[#5b3d86]">
+                          {post.title}
+                        </Link>
                       </h3>
-                      <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
-                        {post.excerpt}
-                      </p>
-                      <Link
-                        to={`/blog/${post.slug}`}
-                        className="text-sm font-medium text-primary group-hover:underline flex items-center"
-                      >
-                        Ler artigo
-                        <ArrowRight className="ml-1 w-4 h-4" />
+                      {post.excerpt && <p className="mt-4 line-clamp-3 text-sm leading-7 text-[#5d546b]">{post.excerpt}</p>}
+                      <Link to={`/blog/${post.slug}`} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#5b3d86]">
+                        Ler artigo <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                       </Link>
                     </div>
                   </article>
                 ))}
               </div>
+            ) : (
+              <Card tone="default">
+                <BookOpen className="mb-4 h-5 w-5 text-[#8d63c7]" />
+                <p className="text-sm leading-7 text-[#5d546b]">
+                  Os ultimos posts publicados no CMS aparecerao aqui automaticamente.
+                </p>
+              </Card>
             )}
+          </Container>
+        </Section>
 
-            <div className="text-center mt-8 md:hidden">
-              <Link
-                to="/blog"
-                className="inline-flex items-center text-primary font-semibold hover:underline"
-              >
-                Ver todos os artigos
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Link>
+        <Section tone="default">
+          <Container size="content">
+            <Heading
+              eyebrow="Perguntas frequentes"
+              title="Respostas diretas para comecar com mais clareza."
+              description="Informacoes pensadas para familias e tambem para motores de busca entenderem melhor o cuidado oferecido pela Clinica Crescer."
+              align="center"
+            />
+            <div className="mt-10 space-y-4">
+              {faqData.map((faq) => (
+                <details key={faq.question} className="group rounded-[20px] border border-[#eee7f6] bg-white p-6 shadow-[0_14px_45px_rgba(62,46,89,0.06)]">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-5">
+                    <h3 className="text-base font-semibold text-[#262033]">{faq.question}</h3>
+                    <ArrowRight className="h-4 w-4 shrink-0 text-[#8d63c7] transition-transform group-open:rotate-90" />
+                  </summary>
+                  <p className="mt-4 text-sm leading-7 text-[#5d546b]">{faq.answer}</p>
+                </details>
+              ))}
             </div>
-          </div>
-        </section>
-      )}
+          </Container>
+        </Section>
+
+        <Section tone="default" spacing="compact">
+          <Container>
+            <CTABox
+              title="Vamos entender juntos o que sua familia precisa agora?"
+              description="Acolhemos sua duvida com seriedade, cuidado e um plano possivel. O primeiro passo pode ser uma conversa, uma avaliacao ou uma orientacao."
+            >
+              <Button asChild variant="secondary" withArrow>
+                <Link to="/quando-procurar-avaliacao">Agendar avaliacao</Link>
+              </Button>
+              <Button asChild variant="ghost" className="text-white hover:bg-white/12">
+                <Link to="/sobre">Conhecer a Clinica Crescer</Link>
+              </Button>
+            </CTABox>
+          </Container>
+        </Section>
+
+        <Section tone="lilac" spacing="compact">
+          <PatternOverlay />
+          <Container className="relative grid gap-8 md:grid-cols-[1.2fr_0.8fr_0.8fr]">
+            <div>
+              <h2 className="text-2xl font-semibold text-[#262033]">Clinica Crescer</h2>
+              <p className="mt-4 max-w-md text-sm leading-7 text-[#5d546b]">
+                Desenvolvimento infantil, avaliacao neuropsicologica, terapia ABA e orientacao familiar com uma abordagem humana, tecnica e integrada.
+              </p>
+            </div>
+            <nav aria-label="Links institucionais">
+              <h3 className="text-sm font-semibold text-[#262033]">Institucional</h3>
+              <ul className="mt-4 space-y-3 text-sm text-[#5d546b]">
+                <li><Link className="hover:text-[#5b3d86]" to="/sobre">Sobre</Link></li>
+                <li><Link className="hover:text-[#5b3d86]" to="/equipe">Equipe</Link></li>
+                <li><Link className="hover:text-[#5b3d86]" to="/blog">Blog</Link></li>
+              </ul>
+            </nav>
+            <nav aria-label="Servicos principais">
+              <h3 className="text-sm font-semibold text-[#262033]">Servicos</h3>
+              <ul className="mt-4 space-y-3 text-sm text-[#5d546b]">
+                <li><Link className="hover:text-[#5b3d86]" to="/avaliacao-neuropsicologica">Avaliacao Neuropsicologica</Link></li>
+                <li><Link className="hover:text-[#5b3d86]" to="/terapia-aba">Terapia ABA</Link></li>
+                <li><Link className="hover:text-[#5b3d86]" to="/orientacao-parental">Orientacao Familiar</Link></li>
+              </ul>
+            </nav>
+          </Container>
+        </Section>
+
+        <SectionDivider />
+      </main>
     </>
   );
 };
