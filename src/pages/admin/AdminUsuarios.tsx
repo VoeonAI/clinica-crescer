@@ -7,7 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Mail, Shield, Trash2, Key } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Plus, Mail, Shield, Trash2, Key, RefreshCw, AlertCircle } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import { PermissionGate } from "@/components/PermissionGate";
 import {
@@ -31,6 +32,7 @@ const AdminUsuarios = () => {
     password: "",
     role: "editor" as "master" | "editor" | "viewer",
   });
+  const [syncMode, setSyncMode] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -39,11 +41,13 @@ const AdminUsuarios = () => {
   }, []);
 
   const loadUsers = async () => {
+    setLoading(true);
     try {
       const data = await authService.getProfiles();
       setUsers(data);
     } catch (error) {
-      showError("Erro ao carregar usuários");
+      console.error('Error loading users:', error);
+      showError("Erro ao carregar usuários. Verifique o console para detalhes.");
     } finally {
       setLoading(false);
     }
@@ -54,10 +58,16 @@ const AdminUsuarios = () => {
     setSubmitting(true);
 
     try {
-      await authService.createInvite(newUser.email, newUser.role, newUser.fullName);
-      showSuccess("Usuário criado com sucesso. Uma senha temporária foi enviada por email.");
+      if (syncMode) {
+        await authService.syncExistingUser(newUser.email, newUser.role, newUser.fullName);
+        showSuccess("Usuário sincronizado com sucesso!");
+      } else {
+        await authService.createInvite(newUser.email, newUser.role, newUser.fullName);
+        showSuccess("Usuário criado com sucesso. Uma senha temporária foi enviada por email.");
+      }
       setDialogOpen(false);
       setNewUser({ email: "", fullName: "", password: "", role: "editor" });
+      setSyncMode(false);
       loadUsers();
     } catch (error: any) {
       showError(error.message || "Erro ao criar usuário");
@@ -103,7 +113,9 @@ const AdminUsuarios = () => {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Adicionar Novo Usuário</DialogTitle>
+                <DialogTitle>
+                  {syncMode ? "Sincronizar Usuário Existente" : "Adicionar Novo Usuário"}
+                </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleCreateUser} className="space-y-4">
                 <div className="space-y-2">
@@ -125,36 +137,38 @@ const AdminUsuarios = () => {
                     required
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Senha Temporária *</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="password"
-                      type="password"
-                      value={newUser.password}
-                      onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                      placeholder="Mínimo 8 caracteres"
-                      required
-                      minLength={8}
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => {
-                        const tempPassword = Math.random().toString(36).slice(-8);
-                        setNewUser({ ...newUser, password: tempPassword });
-                      }}
-                      title="Gerar senha aleatória"
-                    >
-                      <Key className="w-4 h-4" />
-                    </Button>
+                {!syncMode && (
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Senha Temporária *</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="password"
+                        type="password"
+                        value={newUser.password}
+                        onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                        placeholder="Mínimo 8 caracteres"
+                        required
+                        minLength={8}
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => {
+                          const tempPassword = Math.random().toString(36).slice(-8);
+                          setNewUser({ ...newUser, password: tempPassword });
+                        }}
+                        title="Gerar senha aleatória"
+                      >
+                        <Key className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      O usuário deverá alterar esta senha após o primeiro login.
+                    </p>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    O usuário deverá alterar esta senha após o primeiro login.
-                  </p>
-                </div>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="role">Função *</Label>
                   <Select
@@ -171,6 +185,28 @@ const AdminUsuarios = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="flex items-center space-x-2 p-3 bg-muted rounded-md">
+                  <Switch
+                    id="sync-mode"
+                    checked={syncMode}
+                    onCheckedChange={setSyncMode}
+                  />
+                  <Label htmlFor="sync-mode" className="text-sm cursor-pointer">
+                    Sincronizar usuário existente no Authentication
+                  </Label>
+                </div>
+                {syncMode && (
+                  <div className="flex items-start gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 shrink-0" />
+                    <div className="text-sm text-yellow-800">
+                      <p className="font-medium mb-1">Modo de sincronização</p>
+                      <p>
+                        Isso vai criar/atualizar o profile para um usuário que já existe no Authentication.
+                        Não altera a senha do usuário.
+                      </p>
+                    </div>
+                  </div>
+                )}
                 <div className="flex justify-end gap-2 pt-4">
                   <Button
                     type="button"
@@ -178,12 +214,13 @@ const AdminUsuarios = () => {
                     onClick={() => {
                       setDialogOpen(false);
                       setNewUser({ email: "", fullName: "", password: "", role: "editor" });
+                      setSyncMode(false);
                     }}
                   >
                     Cancelar
                   </Button>
                   <Button type="submit" disabled={submitting}>
-                    {submitting ? "Criando..." : "Criar Usuário"}
+                    {submitting ? "Processando..." : syncMode ? "Sincronizar" : "Criar Usuário"}
                   </Button>
                 </div>
               </form>
@@ -193,16 +230,27 @@ const AdminUsuarios = () => {
       </div>
 
       {loading ? (
-        <div>Carregando...</div>
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">Carregando usuários...</p>
+        </div>
       ) : users.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground mb-4">Nenhum usuário encontrado</p>
-            <PermissionGate allowedRoles={["master"]}>
-              <Button onClick={() => setDialogOpen(true)}>
-                Adicionar primeiro usuário
-              </Button>
-            </PermissionGate>
+            <div className="max-w-md mx-auto">
+              <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Nenhum profile encontrado</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Usuários do Authentication precisam ter registro em public.profiles.
+              </p>
+              <p className="text-sm text-muted-foreground mb-6">
+                Use a opção "Sincronizar usuário existente" para criar profiles para usuários que já existem no Supabase Auth.
+              </p>
+              <PermissionGate allowedRoles={["master"]}>
+                <Button onClick={() => setDialogOpen(true)}>
+                  Adicionar usuário
+                </Button>
+              </PermissionGate>
+            </div>
           </CardContent>
         </Card>
       ) : (

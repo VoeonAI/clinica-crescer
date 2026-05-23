@@ -32,12 +32,52 @@ export const authService = {
       if (error.status === 409) {
         // Verificar se tem error.message customizado
         if (error.message && error.message.includes('USER_ALREADY_EXISTS')) {
-          throw new Error('Este e-mail já está cadastrado. Verifique a lista de usuários ou atualize a função do usuário existente.');
+          throw new Error('Este e-mail já está cadastrado no Authentication. Verifique a lista de usuários ou use a opção de sincronizar.');
         }
         throw new Error('Este e-mail já está cadastrado no sistema.');
       }
       
       // Outros erros
+      throw error;
+    }
+
+    return {
+      id: data.user.id,
+      email,
+      full_name: fullName,
+      role,
+    };
+  },
+
+  async syncExistingUser(email: string, role: Role, fullName: string) {
+    // Obter sessão atual
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      throw new Error('Not authenticated');
+    }
+
+    // Chamar Edge Function com sync_existing = true
+    const { data, error } = await supabase.functions.invoke('create-admin-user', {
+      body: {
+        email,
+        role,
+        full_name: fullName,
+        sync_existing: true
+      },
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
+      }
+    });
+
+    if (error) {
+      console.error('Error syncing user:', error);
+      
+      // Tratar erro de usuário não encontrado
+      if (error.status === 404 && error.message.includes('USER_NOT_FOUND')) {
+        throw new Error('Usuário não encontrado no Authentication.');
+      }
+      
       throw error;
     }
 

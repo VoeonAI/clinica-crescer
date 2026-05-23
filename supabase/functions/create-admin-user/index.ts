@@ -69,19 +69,12 @@ serve(async (req) => {
     }
 
     // Ler dados do corpo da requisição
-    const { full_name, email, password, role } = await req.json()
+    const { full_name, email, password, role, sync_existing } = await req.json()
 
     // Validações
-    if (!email || !password || !role || !full_name) {
+    if (!email || !role || !full_name) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: full_name, email, password, role' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    if (password.length < 8) {
-      return new Response(
-        JSON.stringify({ error: 'Password must be at least 8 characters' }),
+        JSON.stringify({ error: 'Missing required fields: full_name, email, role' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -89,6 +82,86 @@ serve(async (req) => {
     if (!['master', 'editor', 'viewer'].includes(role)) {
       return new Response(
         JSON.stringify({ error: 'Invalid role. Must be master, editor or viewer' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Se for sincronização de usuário existente
+    if (sync_existing) {
+      // Buscar usuário por email no Auth
+      const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers()
+      
+      if (listError) {
+        console.error('[create-admin-user] Error listing users:', listError)
+        return new Response(
+          JSON.stringify({ error: 'Failed to list users' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      const existingUser = users.find(u => u.email === email)
+      
+      if (!existingUser) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'USER_NOT_FOUND',
+            message: 'Usuário não encontrado no Authentication.' 
+          }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // Criar/update profile na tabela pública
+      const { error: profileUpdateError } = await supabaseAdmin
+        .from('profiles')
+        .upsert({
+          id: existingUser.id,
+          email: email,
+          full_name: full_name,
+          role: role
+        })
+
+      if (profileUpdateError) {
+        console.error('[create-admin-user] Error creating profile:', profileUpdateError)
+        return new Response(
+          JSON.stringify({ error: 'Failed to create profile' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      console.log('[create-admin-user] User synced successfully:', { 
+        userId: existingUser.id,
+        email,
+        role,
+        syncedBy: user.id 
+      })
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: 'User profile synced successfully',
+          user: {
+            id: existingUser.id,
+            email,
+            full_name,
+            role
+          }
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Validações para criação de novo usuário
+    if (!password) {
+      return new Response(
+        JSON.stringify({ error: 'Password is required for new users' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    if (password.length < 8) {
+      return new Response(
+        JSON.stringify({ error: 'Password must be at least 8 characters' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -113,8 +186,8 @@ serve(async (req) => {
         return new Response(
           JSON.stringify({ 
             error: 'USER_ALREADY_EXISTS',
-            message: 'Este e-mail já está cadastrado no sistema.',
-            details: 'Verifique a lista de usuários ou atualize a função do usuário existente.'
+            message: 'Este e-mail já está cadastrado no Authentication.',
+            details: 'Verifique a lista de usuários ou use a opção de sincronizar.'
           }),
           { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
