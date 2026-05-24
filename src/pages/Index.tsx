@@ -589,7 +589,7 @@ const Index = () => {
             <div className="relative rounded-[42px] bg-[#fff8df] p-6 shadow-[0_22px_70px_rgba(62,46,89,0.08)] sm:p-8 lg:p-12">
               <div
                 aria-hidden="true"
-                className="absolute inset-0 rounded-[42px] opacity-[0.16]"
+                className="absolute inset-0 rounded-[42px] opacity-70"
                 style={{ backgroundImage: `url("${siteImageUrl(ASSETS.textureYellow)}")`, backgroundSize: "680px auto" }}
               />
               <div className="relative grid gap-10 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
@@ -611,7 +611,7 @@ const Index = () => {
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {alertSigns.map((sign) => (
-                    <div key={sign} className="rounded-2xl bg-white/88 p-4 text-sm leading-6 text-[#5d546b] shadow-[0_14px_45px_rgba(62,46,89,0.07)]">
+                    <div key={sign} className="transform-gpu rounded-2xl bg-white/88 p-4 text-sm leading-6 text-[#5d546b] shadow-[0_14px_45px_rgba(62,46,89,0.07)] transition-[transform,box-shadow] duration-300 ease-out hover:scale-[1.03] hover:shadow-[0_20px_60px_rgba(62,46,89,0.14)]">
                       <CheckCircle2 className="mb-3 h-4 w-4 text-[#e8795f]" />
                       {sign}
                     </div>
