@@ -159,28 +159,24 @@ const Sobre = () => {
       ]}
     >
       <article className="bg-[#fbfafc] text-[#262033]">
-        <section className="relative overflow-visible bg-[#fbfafc] pb-16 pt-16 md:pb-24 md:pt-20 -mt-2 md:-mt-4">
+        {/* Hero Section */}
+        <section className="relative py-16 md:py-24">
+          {/* Background with yellow texture */}
           <div
-            aria-hidden="true"
-            className="absolute inset-0 opacity-[0.26] mix-blend-multiply"
+            className="absolute inset-0"
             style={{
               backgroundImage: `linear-gradient(135deg, rgba(255,255,255,0.72), rgba(255,243,199,0.34)), url("${siteImageUrl(assets.textureYellow)}")`,
               backgroundPosition: "center, center top",
               backgroundRepeat: "no-repeat, repeat-x",
               backgroundSize: "cover, 760px auto",
+              opacity: 0.26,
+              mixBlendMode: "multiply"
             }}
           />
-          <div
-            aria-hidden="true"
-            className="absolute -right-24 top-12 h-72 w-72 rounded-full bg-[#ffd96f]/35 blur-3xl"
-          />
-          <div
-            aria-hidden="true"
-            className="absolute left-8 top-24 hidden h-64 w-64 rounded-full bg-[#dff1ff]/60 blur-3xl md:block"
-          />
           
-          <div className="mx-auto w-full max-w-[1180px] px-5 sm:px-6 lg:px-8 relative grid gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
-            <header className="flex flex-col justify-center">
+          <div className="mx-auto w-full max-w-[1180px] px-5 sm:px-6 lg:px-8 relative grid gap-12 lg:grid-cols-2 lg:items-center">
+            {/* Left: Text */}
+            <header className="flex flex-col justify-center order-2 lg:order-1">
               <h1 className="text-balance text-4xl font-semibold leading-[1.06] text-[#262033] md:text-5xl lg:text-6xl">
                 Sobre a Clínica Crescer
               </h1>
@@ -189,7 +185,8 @@ const Sobre = () => {
               </p>
             </header>
 
-            <div className="relative min-h-[400px] lg:min-h-[480px] mt-6 lg:mt-8 -mb-8 lg:-mb-12">
+            {/* Right: 3D Carousel */}
+            <div className="relative h-[400px] lg:h-[480px] order-1 lg:order-2">
               <div
                 ref={containerRef}
                 className="relative h-full w-full"
@@ -199,7 +196,7 @@ const Sobre = () => {
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
               >
-                <div className="absolute inset-0 flex items-center justify-center perspective-[1500px]">
+                <div className="absolute inset-0 flex items-center justify-center" style={{ perspective: "1500px" }}>
                   {carouselImages.map((image, index) => {
                     const isActive = index === currentIndex;
                     const style = getSlideStyle(index);
@@ -260,14 +257,14 @@ const Sobre = () => {
                   <>
                     <button
                       onClick={goToPrev}
-                      className="absolute left-0 top-1/2 -translate-y-1/2 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-[#5b3d86] shadow-lg transition-all hover:bg-white hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#8d63c7] focus:ring-offset-2 md:-left-4"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-[#5b3d86] shadow-lg transition-all hover:bg-white hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#8d63c7] focus:ring-offset-2"
                       aria-label="Imagem anterior"
                     >
                       <ChevronLeft className="h-5 w-5" />
                     </button>
                     <button
                       onClick={goToNext}
-                      className="absolute right-0 top-1/2 -translate-y-1/2 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-[#5b3d86] shadow-lg transition-all hover:bg-white hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#8d63c7] focus:ring-offset-2 md:-right-4"
+                      className="absolute right-0 top-1/2 -translate-y-1/2 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-[#5b3d86] shadow-lg transition-all hover:bg-white hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#8d63c7] focus:ring-offset-2"
                       aria-label="Próxima imagem"
                     >
                       <ChevronRight className="h-5 w-5" />
