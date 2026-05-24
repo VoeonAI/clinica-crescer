@@ -23,6 +23,12 @@ const assets = {
   animatedSvg: "svg-animado/crescer-logoforma-animada-carregando.svg",
 };
 
+const heroImages = {
+  fachada: "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/site-images/ambiente-unidades/fachada-proximo-crescer.jpg",
+  recepcao: "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/site-images/ambiente-unidades/recepcao-clinica-crescer.jpg",
+  vila: "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/site-images/ambiente-unidades/vila-crescer.jpg",
+};
+
 const values = [
   "Acolhimento e respeito à diversidade",
   "Ética profissional e responsabilidade",
@@ -161,7 +167,7 @@ const Sobre = () => {
       <BreadcrumbSchema items={[{ name: "Home", url: "/" }, { name: "Sobre", url: "/sobre" }]} />
 
       <article className="bg-[#fbfafc] text-[#262033]">
-        <Section className="bg-[#fbfafc] pb-16 pt-14 md:pb-20 md:pt-20" spacing="compact">
+        <Section className="bg-[#fbfafc] pb-16 pt-14 md:pb-24 md:pt-20" spacing="compact">
           <div
             aria-hidden="true"
             className="absolute inset-0 opacity-[0.26] mix-blend-multiply"
@@ -180,7 +186,7 @@ const Sobre = () => {
             aria-hidden="true"
             className="absolute left-8 top-24 hidden h-64 w-64 rounded-full bg-[#dff1ff]/60 blur-3xl md:block"
           />
-          <Container className="relative grid gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+          <Container className="relative grid gap-10 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
             <header>
               <h1 className="text-balance text-4xl font-semibold leading-[1.06] text-[#262033] md:text-5xl lg:text-6xl">
                 Sobre a Clínica Crescer
@@ -190,14 +196,50 @@ const Sobre = () => {
               </p>
             </header>
 
-            <div className="relative min-h-[360px]">
-              <div className="relative h-[360px] overflow-hidden rounded-[42px] shadow-[0_24px 70px_rgba(62,46,89,0.12)]">
-                <PageImage 
-                  src={assets.about} 
-                  alt="Criança em ambiente acolhedor da Vila Crescer" 
-                  className="h-full w-full"
-                />
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-[#262033]/14 via-transparent to-[#fff3c7]/10" />
+            <div className="relative min-h-[480px]">
+              <div
+                className="relative h-[480px] w-full"
+              >
+                {/* Vila Crescer - Main Image - Center */}
+                <div
+                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-[75%] max-w-[420px] rounded-[36px] overflow-hidden shadow-[0_32px_90px_rgba(62,46,89,0.16)] animate-[heroFloat_6s_ease-in-out_infinite]"
+                >
+                  <img
+                    src={heroImages.vila}
+                    alt="Vila Crescer - ambiente acolhedor"
+                    className="h-full w-full object-cover"
+                    loading="eager"
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-[#262033]/8 via-transparent to-[#fff3c7]/6" />
+                </div>
+
+                {/* Recepção - Overlapping - Left, slightly rotated */}
+                <div
+                  className="absolute left-[8%] top-[15%] z-20 w-[55%] max-w-[280px] rounded-[28px] overflow-hidden shadow-[0_24px 70px_rgba(62,46,89,0.14)] animate-[heroFloat_7s_ease-in-out_1s_infinite]"
+                  style={{ transform: "rotate(-4deg)" }}
+                >
+                  <img
+                    src={heroImages.recepcao}
+                    alt="Recepção da Clínica Crescer"
+                    className="h-full w-full object-cover"
+                    loading="eager"
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/12 to-transparent" />
+                </div>
+
+                {/* Fachada - Overlapping - Right, slightly rotated */}
+                <div
+                  className="absolute right-[5%] bottom-[10%] z-20 w-[58%] max-w-[300px] rounded-[30px] overflow-hidden shadow-[0_28px 80px_rgba(62,46,89,0.15)] animate-[heroFloat_8s_ease-in-out_0.5s_infinite]"
+                  style={{ transform: "rotate(3deg)" }}
+                >
+                  <img
+                    src={heroImages.fachada}
+                    alt="Fachada da Clínica Crescer"
+                    className="h-full w-full object-cover"
+                    loading="eager"
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-tl from-white/10 to-transparent" />
+                </div>
               </div>
             </div>
           </Container>
@@ -246,10 +288,14 @@ const Sobre = () => {
         <Section tone="lilac">
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 opacity-[0.14]"
+            className="pointer-events-none absolute inset-0 opacity-[0.22]"
             style={{ backgroundImage: `url("${siteImageUrl(assets.patternPurple)}")`, backgroundSize: "440px auto" }}
           />
-          <Container className="relative">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-[#f8f2ff]/92"
+          />
+          <Container className="relative z-10">
             <section>
               <h2 className="mb-8 text-2xl font-bold text-primary">Nossos Valores</h2>
               <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
@@ -257,12 +303,12 @@ const Sobre = () => {
                   <li
                     key={value}
                     className={cn(
-                      "group rounded-[26px] border p-5 shadow-[0_14px 45px_rgba(62,46,89,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px 70px_rgba(62,46,89,0.12)]",
-                      index === 0 && "border-[#dec7ff] bg-[#efe2ff] text-[#3d2d5c]",
-                      index === 1 && "border-[#ffe1d5] bg-[#fff4ef] text-[#5a3028]",
-                      index === 2 && "border-[#fff3c7] bg-[#fff8df] text-[#4f3a18]",
-                      index === 3 && "border-[#dff1ff] bg-[#f1f9ff] text-[#263d55]",
-                      index === 4 && "border-[#cce8d7] bg-[#f3faf6] text-[#274534]",
+                      "group rounded-[26px] border p-5 shadow-[0_18px 55px_rgba(62,46,89,0.12)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_26px 80px_rgba(62,46,89,0.18)]",
+                      index === 0 && "border-[#dec7ff] bg-[#efe2ff] text-[#2d2050]",
+                      index === 1 && "border-[#ffdec7] bg-[#fff4ef] text-[#4a2420]",
+                      index === 2 && "border-[#ffe8a8] bg-[#fff8df] text-[#3a3010]",
+                      index === 3 && "border-[#b8e0f4] bg-[#dff1ff] text-[#1a2d3d]",
+                      index === 4 && "border-[#b8e8d0] bg-[#f3faf6] text-[#1d362a]",
                     )}
                   >
                     <CheckCircle2 className="mb-5 h-5 w-5 text-[#8d63c7] transition-transform duration-300 group-hover:scale-110" />
@@ -317,7 +363,7 @@ const Sobre = () => {
                   {otherMembers.map((member) => (
                     <article
                       key={member.id}
-                      className="group rounded-[30px] border border-[#eee7f6] bg-white p-6 text-center shadow-[0_14px 45px_rgba(62,46,89,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px 70px_rgba(62,46,89,0.12)]"
+                      className="group rounded-[30px] border border-[#eee7f6] bg-white p-6 text-center shadow-[0_14px 45px rgba(62,46,89,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px 70px rgba(62,46,89,0.12)]"
                     >
                       <div className="flex justify-center">
                         <StaffPhoto member={member} />
@@ -349,7 +395,7 @@ const Sobre = () => {
                   <li key={link.href}>
                     <Link
                       to={link.href}
-                      className="group flex h-full items-center justify-between gap-3 rounded-2xl border border-[#eee7f6] bg-white/82 px-4 py-3 font-semibold text-[#5b3d86] shadow-[0_10px 30px_rgba(62,46,89,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#dec7ff] hover:bg-[#f8f2ff]"
+                      className="group flex h-full items-center justify-between gap-3 rounded-2xl border border-[#eee7f6] bg-white/82 px-4 py-3 font-semibold text-[#5b3d86] shadow-[0_10px 30px rgba(62,46,89,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#dec7ff] hover:bg-[#f8f2ff]"
                     >
                       <span>{link.label}</span>
                       <ArrowRight className="h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-x-1" />
