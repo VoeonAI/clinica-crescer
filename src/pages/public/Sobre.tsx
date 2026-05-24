@@ -236,16 +236,16 @@ const Sobre = () => {
     } else if (relativeIndex === 1) {
       // Right side - behind, rotated
       return {
-        transform: reducedMotion ? 'none' : 'translateX(25%) translateZ(-60px) scale(0.85) rotateY(-8deg)',
-        opacity: 0.65,
+        transform: reducedMotion ? 'none' : 'translateX(30%) translateZ(-120px) scale(0.82) rotateY(-10deg)',
+        opacity: 0.6,
         zIndex: 2,
         filter: 'brightness(0.85)',
       };
     } else {
       // Left side - behind, rotated
       return {
-        transform: reducedMotion ? 'none' : 'translateX(-25%) translateZ(-60px) scale(0.85) rotateY(8deg)',
-        opacity: 0.65,
+        transform: reducedMotion ? 'none' : 'translateX(-30%) translateZ(-120px) scale(0.82) rotateY(10deg)',
+        opacity: 0.6,
         zIndex: 1,
         filter: 'brightness(0.85)',
       };
@@ -258,7 +258,7 @@ const Sobre = () => {
       <BreadcrumbSchema items={[{ name: "Home", url: "/" }, { name: "Sobre", url: "/sobre" }]} />
 
       <article className="bg-[#fbfafc] text-[#262033]">
-        <Section className="bg-[#fbfafc] pb-16 pt-14 md:pb-24 md:pt-20" spacing="compact">
+        <Section className="bg-[#fbfafc] pb-20 pt-14 md:pb-28 md:pt-20 overflow-visible" spacing="compact">
           <div
             aria-hidden="true"
             className="absolute inset-0 opacity-[0.26] mix-blend-multiply"
@@ -287,7 +287,7 @@ const Sobre = () => {
               </p>
             </header>
 
-            <div className="relative min-h-[420px] lg:min-h-[480px]">
+            <div className="relative min-h-[460px] lg:min-h-[520px] mt-8">
               <div
                 ref={containerRef}
                 className="relative h-full w-full"
@@ -297,7 +297,7 @@ const Sobre = () => {
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
               >
-                <div className="absolute inset-0 flex items-center justify-center perspective-[1200px]">
+                <div className="absolute inset-0 flex items-center justify-center perspective-[1500px]">
                   {carouselImages.map((image, index) => {
                     const isActive = index === currentIndex;
                     const style = getSlideStyle(index);
@@ -327,7 +327,7 @@ const Sobre = () => {
                         <div
                           className={cn(
                             "w-[85%] max-w-[440px] rounded-[32px] overflow-hidden shadow-[0_32px_90px_rgba(62,46,89,0.18)]",
-                            isActive ? "shadow-[0_36px_100px_rgba(62,46,89,0.22)]" : "shadow-[0_24px_70px_rgba(62,46,89,0.14)]"
+                            isActive ? "shadow-[0_42px_110px_rgba(62,46,89,0.24)]" : "shadow-[0_24px_70px_rgba(62,46,89,0.14)]"
                           )}
                         >
                           <img
