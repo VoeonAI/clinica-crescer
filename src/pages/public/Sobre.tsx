@@ -196,49 +196,73 @@ const Sobre = () => {
               </p>
             </header>
 
-            <div className="relative min-h-[480px]">
-              <div
-                className="relative h-[480px] w-full"
+            <div className="relative min-h-[520px] lg:min-h-[580px]">
+              {/* Main Image - Vila Crescer - Right side, largest */}
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-[65%] max-w-[480px] rounded-[40px] overflow-hidden shadow-[0_28px 80px_rgba(62,46,89,0.18)]">
+                <img
+                  src={heroImages.vila}
+                  alt="Vila Crescer - ambiente acolhedor"
+                  className="h-full w-full object-cover"
+                  loading="eager"
+                />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#262033]/10 via-transparent to-[#fff3c7]/8" />
+              </div>
+
+              {/* Secondary Image - Recepção - Top Left, smaller with subtle rotation */}
+              <div 
+                className="absolute left-0 top-[5%] z-30 w-[42%] max-w-[260px] rounded-[32px] overflow-hidden shadow-[0_20px 60px_rgba(62,46,89,0.14)] animate-[heroFloat_8s_ease-in-out_infinite] lg:block"
+                style={{ transform: "rotate(-2deg)" }}
               >
-                {/* Vila Crescer - Main Image - Center */}
-                <div
-                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-[75%] max-w-[420px] rounded-[36px] overflow-hidden shadow-[0_32px_90px_rgba(62,46,89,0.16)] animate-[heroFloat_6s_ease-in-out_infinite]"
-                >
+                <img
+                  src={heroImages.recepcao}
+                  alt="Recepção da Clínica Crescer"
+                  className="h-full w-full object-cover"
+                  loading="eager"
+                />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/16 to-transparent" />
+              </div>
+
+              {/* Secondary Image - Fachada - Bottom Left, medium */}
+              <div className="absolute left-[8%] bottom-[5%] z-25 w-[50%] max-w-[320px] rounded-[36px] overflow-hidden shadow-[0_24px 70px_rgba(62,46,89,0.16)] animate-[heroFloat_7s_ease-in-out_1s_infinite] lg:block">
+                <img
+                  src={heroImages.fachada}
+                  alt="Fachada da Clínica Crescer"
+                  className="h-full w-full object-cover"
+                  loading="eager"
+                />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-tl from-white/12 to-transparent" />
+              </div>
+
+              {/* Mobile Stacked Layout */}
+              <div className="hidden lg:hidden flex flex-col gap-4 pt-4">
+                <div className="relative rounded-[32px] overflow-hidden shadow-[0_20px 60px_rgba(62,46,89,0.14)]">
                   <img
                     src={heroImages.vila}
                     alt="Vila Crescer - ambiente acolhedor"
-                    className="h-full w-full object-cover"
+                    className="aspect-[4/3] w-full object-cover"
                     loading="eager"
                   />
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-[#262033]/8 via-transparent to-[#fff3c7]/6" />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#262033]/10 via-transparent to-[#fff3c7]/8" />
                 </div>
-
-                {/* Recepção - Overlapping - Left, slightly rotated */}
-                <div
-                  className="absolute left-[8%] top-[15%] z-20 w-[55%] max-w-[280px] rounded-[28px] overflow-hidden shadow-[0_24px 70px_rgba(62,46,89,0.14)] animate-[heroFloat_7s_ease-in-out_1s_infinite]"
-                  style={{ transform: "rotate(-4deg)" }}
-                >
-                  <img
-                    src={heroImages.recepcao}
-                    alt="Recepção da Clínica Crescer"
-                    className="h-full w-full object-cover"
-                    loading="eager"
-                  />
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/12 to-transparent" />
-                </div>
-
-                {/* Fachada - Overlapping - Right, slightly rotated */}
-                <div
-                  className="absolute right-[5%] bottom-[10%] z-20 w-[58%] max-w-[300px] rounded-[30px] overflow-hidden shadow-[0_28px 80px_rgba(62,46,89,0.15)] animate-[heroFloat_8s_ease-in-out_0.5s_infinite]"
-                  style={{ transform: "rotate(3deg)" }}
-                >
-                  <img
-                    src={heroImages.fachada}
-                    alt="Fachada da Clínica Crescer"
-                    className="h-full w-full object-cover"
-                    loading="eager"
-                  />
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-tl from-white/10 to-transparent" />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="relative rounded-[28px] overflow-hidden shadow-[0_18px 55px_rgba(62,46,89,0.12)]">
+                    <img
+                      src={heroImages.recepcao}
+                      alt="Recepção da Clínica Crescer"
+                      className="aspect-square w-full object-cover"
+                      loading="eager"
+                    />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/16 to-transparent" />
+                  </div>
+                  <div className="relative rounded-[28px] overflow-hidden shadow-[0_18px 55px_rgba(62,46,89,0.12)]">
+                    <img
+                      src={heroImages.fachada}
+                      alt="Fachada da Clínica Crescer"
+                      className="aspect-square w-full object-cover"
+                      loading="eager"
+                    />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-tl from-white/12 to-transparent" />
+                  </div>
                 </div>
               </div>
             </div>
