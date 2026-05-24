@@ -18,7 +18,8 @@ const assets = {
   patternWhite: "patterns/pattern-branco.png",
   textureYellow: "backgrounds/textura-amarela.png",
   icon: "icons/icone.png",
-  hand: "icons/mao-crescer.png",
+  about: "ambiente-unidades/crianca-vila-crescer.png",
+  facade: "ambiente-unidades/fachada-unidade-criancas-crescer.jpg",
   animatedSvg: "svg-animado/crescer-logoforma-animada-carregando.svg",
 };
 
@@ -53,7 +54,7 @@ const StaffPhoto = ({ member, featured = false }: { member: StaffMember; feature
     return (
       <div
         className={cn(
-          "flex items-center justify-center rounded-full bg-gradient-to-br from-[#efe2ff] via-white to-[#fff3c7] font-semibold text-[#5b3d86] shadow-[0_18px_55px_rgba(62,46,89,0.1)]",
+          "flex items-center justify-center rounded-full bg-gradient-to-br from-[#efe2ff] via-white to-[#fff3c7] font-semibold text-[#5b3d86] shadow-[0_18px 55px_rgba(62,46,89,0.1)]",
           featured ? "h-40 w-40 text-4xl sm:h-48 sm:w-48" : "h-28 w-28 text-2xl",
         )}
         aria-label={member.name}
@@ -71,9 +72,50 @@ const StaffPhoto = ({ member, featured = false }: { member: StaffMember; feature
       loading="lazy"
       onError={() => setFailed(true)}
       className={cn(
-        "rounded-full object-cover shadow-[0_18px_55px_rgba(62,46,89,0.12)] ring-4 ring-white",
+        "rounded-full object-cover shadow-[0_18px 55px_rgba(62,46,89,0.12)] ring-4 ring-white",
         featured ? "h-40 w-40 sm:h-48 sm:w-48" : "h-28 w-28",
       )}
+    />
+  );
+};
+
+const PageImage = ({
+  src,
+  alt,
+  className,
+  priority = false,
+}: {
+  src?: string | null;
+  alt: string;
+  className?: string;
+  priority?: boolean;
+}) => {
+  const [failed, setFailed] = useState(false);
+  const resolvedSrc = src ? siteImageUrl(src) : "";
+
+  if (!resolvedSrc || failed) {
+    return (
+      <div
+        role="img"
+        aria-label={alt}
+        className={cn(
+          "flex min-h-[280px] items-center justify-center bg-gradient-to-br from-[#f8f2ff] via-white to-[#fff3c7]",
+          className,
+        )}
+      >
+        <img src={siteImageUrl(assets.icon)} alt="" className="h-20 w-20 object-contain opacity-80" loading="lazy" />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={resolvedSrc}
+      alt={alt}
+      loading={priority ? "eager" : "lazy"}
+      fetchPriority={priority ? "high" : "auto"}
+      onError={() => setFailed(true)}
+      className={cn("h-full w-full object-cover", className)}
     />
   );
 };
@@ -148,23 +190,14 @@ const Sobre = () => {
               </p>
             </header>
 
-            <div className="relative min-h-[330px]">
-              <img
-                src={siteImageUrl(assets.hand)}
-                alt=""
-                aria-hidden="true"
-                className="pointer-events-none absolute -right-8 -top-8 h-52 w-52 object-contain opacity-20"
-                loading="lazy"
-              />
-              <div className="absolute left-6 top-8 h-56 w-[78%] rounded-[42px] bg-[#efe2ff]" />
-              <div
-                className="absolute right-0 top-0 h-[300px] w-[86%] overflow-hidden rounded-[38px] border border-white/75 bg-[#5b3d86] p-8 text-white shadow-[0_30px_90px_rgba(62,46,89,0.16)]"
-                style={{
-                  backgroundImage: `linear-gradient(135deg, rgba(91,61,134,0.92), rgba(141,99,199,0.76)), url("${siteImageUrl(assets.patternPurple)}")`,
-                  backgroundSize: "cover, 420px auto",
-                }}
-              >
-                <img src={siteImageUrl(assets.animatedSvg)} alt="" aria-hidden="true" className="h-20 w-20 object-contain" />
+            <div className="relative min-h-[360px]">
+              <div className="relative h-[360px] overflow-hidden rounded-[42px] shadow-[0_24px 70px_rgba(62,46,89,0.12)]">
+                <PageImage 
+                  src={assets.about} 
+                  alt="Criança em ambiente acolhedor da Vila Crescer" 
+                  className="h-full w-full"
+                />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-[#262033]/14 via-transparent to-[#fff3c7]/10" />
               </div>
             </div>
           </Container>
@@ -172,7 +205,7 @@ const Sobre = () => {
 
         <Section tone="default" className="overflow-visible">
           <Container className="grid gap-8 lg:grid-cols-[1.08fr_0.92fr]">
-            <section className="relative rounded-[36px] border border-[#eee7f6] bg-white p-7 shadow-[0_22px_70px_rgba(62,46,89,0.1)] transition-all duration-300 hover:-translate-y-1 sm:p-9">
+            <section className="relative rounded-[36px] border border-[#eee7f6] bg-white p-7 shadow-[0_22px 70px_rgba(62,46,89,0.1)] transition-all duration-300 hover:-translate-y-1 sm:p-9">
               <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-[#fff3c7]" />
               <div className="relative">
                 <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#efe2ff] text-[#5b3d86]">
@@ -189,7 +222,7 @@ const Sobre = () => {
             </section>
 
             <section
-              className="relative overflow-hidden rounded-[36px] bg-[#5b3d86] p-7 text-white shadow-[0_26px_80px_rgba(62,46,89,0.16)] transition-all duration-300 hover:-translate-y-1 sm:p-9"
+              className="relative overflow-hidden rounded-[36px] bg-[#5b3d86] p-7 text-white shadow-[0_26px 80px_rgba(62,46,89,0.16)] transition-all duration-300 hover:-translate-y-1 sm:p-9"
               style={{
                 backgroundImage: `linear-gradient(135deg, rgba(91,61,134,0.94), rgba(77,159,201,0.72)), url("${siteImageUrl(assets.patternWhite)}")`,
                 backgroundSize: "cover, 380px auto",
@@ -224,7 +257,7 @@ const Sobre = () => {
                   <li
                     key={value}
                     className={cn(
-                      "group rounded-[26px] border p-5 shadow-[0_14px_45px_rgba(62,46,89,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_70px_rgba(62,46,89,0.12)]",
+                      "group rounded-[26px] border p-5 shadow-[0_14px 45px_rgba(62,46,89,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px 70px_rgba(62,46,89,0.12)]",
                       index === 0 && "border-[#dec7ff] bg-[#efe2ff] text-[#3d2d5c]",
                       index === 1 && "border-[#ffe1d5] bg-[#fff4ef] text-[#5a3028]",
                       index === 2 && "border-[#fff3c7] bg-[#fff8df] text-[#4f3a18]",
@@ -257,7 +290,7 @@ const Sobre = () => {
               </div>
 
               {featuredMember && (
-                <div className="mb-6 rounded-[36px] border border-[#eee7f6] bg-white p-6 shadow-[0_22px_70px_rgba(62,46,89,0.1)] sm:p-8">
+                <div className="mb-6 rounded-[36px] border border-[#eee7f6] bg-white p-6 shadow-[0_22px 70px_rgba(62,46,89,0.1)] sm:p-8">
                   <div className="flex flex-col items-center gap-6 text-center md:flex-row md:text-left">
                     <StaffPhoto member={featuredMember} featured />
                     <div>
@@ -284,7 +317,7 @@ const Sobre = () => {
                   {otherMembers.map((member) => (
                     <article
                       key={member.id}
-                      className="group rounded-[30px] border border-[#eee7f6] bg-white p-6 text-center shadow-[0_14px_45px_rgba(62,46,89,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_70px_rgba(62,46,89,0.12)]"
+                      className="group rounded-[30px] border border-[#eee7f6] bg-white p-6 text-center shadow-[0_14px 45px_rgba(62,46,89,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px 70px_rgba(62,46,89,0.12)]"
                     >
                       <div className="flex justify-center">
                         <StaffPhoto member={member} />
@@ -304,7 +337,7 @@ const Sobre = () => {
         <Section tone="lilac" spacing="compact">
           <Container size="content">
             <section
-              className="relative overflow-hidden rounded-[34px] bg-white p-6 shadow-[0_22px_70px_rgba(62,46,89,0.12)] sm:p-8"
+              className="relative overflow-hidden rounded-[34px] bg-white p-6 shadow-[0_22px 70px_rgba(62,46,89,0.12)] sm:p-8"
               style={{
                 backgroundImage: `linear-gradient(135deg, rgba(255,255,255,0.9), rgba(248,242,255,0.82)), url("${siteImageUrl(assets.patternPurple)}")`,
                 backgroundSize: "cover, 420px auto",
@@ -316,7 +349,7 @@ const Sobre = () => {
                   <li key={link.href}>
                     <Link
                       to={link.href}
-                      className="group flex h-full items-center justify-between gap-3 rounded-2xl border border-[#eee7f6] bg-white/82 px-4 py-3 font-semibold text-[#5b3d86] shadow-[0_10px_30px_rgba(62,46,89,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#dec7ff] hover:bg-[#f8f2ff]"
+                      className="group flex h-full items-center justify-between gap-3 rounded-2xl border border-[#eee7f6] bg-white/82 px-4 py-3 font-semibold text-[#5b3d86] shadow-[0_10px 30px_rgba(62,46,89,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#dec7ff] hover:bg-[#f8f2ff]"
                     >
                       <span>{link.label}</span>
                       <ArrowRight className="h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-x-1" />
