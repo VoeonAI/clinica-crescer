@@ -32,6 +32,7 @@ import { cn } from "@/lib/utils";
 const ASSETS = {
   hero: "ambiente-unidades/recepcao-clinica-crescer.jpg",
   about: "ambiente-unidades/crianca-vila-crescer.png",
+  abaFamily: "ambiente-unidades/Familia-crescer.png",
   facade: "ambiente-unidades/fachada-unidade-criancas-crescer.jpg",
   village: "ambiente-unidades/vila-crescer.jpg",
   texturePurple: "backgrounds/textura-roxa.png",
@@ -39,6 +40,7 @@ const ASSETS = {
   patternWhite: "patterns/pattern-branco.png",
   patternPurple: "patterns/pattern-roxo.png",
   icon: "icons/icone.png",
+  hand: "icons/mao-crescer.png",
   animatedSvg: "svg-animado/crescer-logoforma-animada-carregando.svg",
 };
 
@@ -182,7 +184,9 @@ const Index = () => {
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loadingContent, setLoadingContent] = useState(true);
   const [heroVideoActive, setHeroVideoActive] = useState(false);
+  const [abaHandOffset, setAbaHandOffset] = useState(0);
   const heroVideoRef = useRef<HTMLVideoElement | null>(null);
+  const abaSectionRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -208,6 +212,39 @@ const Index = () => {
 
     return () => {
       mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const section = abaSectionRef.current;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const mobile = window.matchMedia("(max-width: 767px)").matches;
+
+    if (!section || reducedMotion || mobile) return;
+
+    let frame = 0;
+
+    const updateHandOffset = () => {
+      frame = 0;
+      const rect = section.getBoundingClientRect();
+      const viewport = window.innerHeight || 1;
+      const progress = (rect.top + rect.height / 2 - viewport / 2) / viewport;
+      setAbaHandOffset(Math.max(-14, Math.min(14, progress * -18)));
+    };
+
+    const requestUpdate = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(updateHandOffset);
+    };
+
+    updateHandOffset();
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", requestUpdate);
+
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", requestUpdate);
+      window.removeEventListener("resize", requestUpdate);
     };
   }, []);
 
@@ -623,7 +660,16 @@ const Index = () => {
         </Section>
 
         <Section tone="blue" className="overflow-visible">
-          <Container className="grid gap-12 lg:grid-cols-[1fr_0.94fr] lg:items-center">
+          <div ref={abaSectionRef} className="pointer-events-none absolute inset-0 z-0" aria-hidden="true" />
+          <img
+            src={siteImageUrl(ASSETS.hand)}
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-28 top-8 z-0 hidden w-[540px] max-w-none opacity-[0.16] will-change-transform md:block lg:-right-36 lg:w-[680px]"
+            loading="lazy"
+            style={{ transform: `translate3d(${abaHandOffset * 0.35}px, ${abaHandOffset}px, 0) rotate(-10deg)` }}
+          />
+          <Container className="relative z-10 grid gap-12 lg:grid-cols-[1fr_0.94fr] lg:items-center">
             <div>
               <Heading
                 eyebrow="Terapia ABA"
@@ -637,7 +683,11 @@ const Index = () => {
                   "Orientação familiar contínua.",
                   "Generalização para a vida real.",
                 ].map((item) => (
-                  <Card key={item} tone="default">
+                  <Card
+                    key={item}
+                    tone="default"
+                    className="transform-gpu transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:scale-[1.015] hover:shadow-[0_22px_64px_rgba(62,46,89,0.14)]"
+                  >
                     <p className="text-sm leading-7 text-[#5d546b]">{item}</p>
                   </Card>
                 ))}
@@ -652,18 +702,32 @@ const Index = () => {
                 className="absolute left-0 top-10 h-[450px] w-[88%] overflow-hidden rounded-[44px] shadow-[0_30px_90px_rgba(62,46,89,0.14)]"
                 style={{ clipPath: "polygon(0 10%, 100% 0, 92% 90%, 8% 100%)" }}
               >
-                <HomeImage src={ASSETS.facade} alt="Fachada da unidade da Clínica Crescer para crianças" className="h-full w-full" />
+                <HomeImage src={ASSETS.abaFamily} alt="Família em ambiente acolhedor da Clínica Crescer" className="h-full w-full" />
               </div>
             </div>
           </Container>
         </Section>
 
         <Section tone="default">
-          <Container>
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 opacity-[0.62]"
+            style={{
+              backgroundImage: `url("${siteImageUrl(ASSETS.patternWhite)}")`,
+              backgroundPosition: "center top",
+              backgroundRepeat: "repeat",
+              backgroundSize: "420px auto",
+            }}
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-white/72"
+          />
+          <Container className="relative z-10">
             <Heading
               eyebrow="Respostas diretas"
               title="Desenvolvimento infantil com orientação para a vida real"
-              description="Informações claras para famílias que estão tentando entender o próximo passo com calma, segurança e acolhimento."
+              description="Informações claras e baseadas na ciência, para famílias que estão tentando entender o próximo passo com calma, segurança e acolhimento."
               align="center"
               className="mb-12"
             />
@@ -693,7 +757,7 @@ const Index = () => {
                 </div>
               </div>
               <div>
-                <Badge tone="lilac" className="mb-5">Idealizadora em destaque</Badge>
+                <Badge tone="lilac" className="mb-5">Idealizadora da Crescer</Badge>
                 <Heading
                   title={founder.name}
                   description={founder.role_title || "Profissional em destaque na Clínica Crescer."}
@@ -722,11 +786,11 @@ const Index = () => {
             <div className="mb-12 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
               <Heading
                 eyebrow="Equipe"
-                title="Profissionais que olham para a criança inteira"
+                title="Profissionais que olham para a criança por completo"
                 description="Uma equipe ativa, integrada e preparada para acolher diferentes necessidades do desenvolvimento."
               />
               <Button asChild variant="ghost" withArrow>
-                <Link to="/equipe">Ver equipe completa</Link>
+                <Link to="/equipe">Ver toda a equipe</Link>
               </Button>
             </div>
 
@@ -778,7 +842,21 @@ const Index = () => {
         </Section>
 
         <Section tone="lilac">
-          <Container>
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 opacity-[0.28]"
+            style={{
+              backgroundImage: `url("${siteImageUrl(ASSETS.patternPurple)}")`,
+              backgroundPosition: "center top",
+              backgroundRepeat: "repeat",
+              backgroundSize: "430px auto",
+            }}
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-[#f8f2ff]/78"
+          />
+          <Container className="relative z-10">
             <div className="mb-12 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
               <Heading
                 eyebrow="Blog"
