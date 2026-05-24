@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Heart, Lightbulb, Shield, Users, ArrowRight, Star } from "lucide-react";
+import { Heart, Lightbulb, Shield, Users, ArrowRight, Star } from "lucide-react";
 
 import { PublicPage } from "@/components/PublicPage";
 import { siteImageUrl } from "@/styles/theme";
@@ -15,42 +15,25 @@ const Sobre = () => {
     patternWhite: "patterns/pattern-branco.png",
   };
 
-  const carouselImages = [
+  const galleryImages = [
     {
       url: siteImageUrl("ambiente-unidades/fachada-proximo-crescer.jpg"),
-      alt: "Fachada da Clínica Crescer"
+      alt: "Fachada da Clínica Crescer",
+      rotate: false
     },
     {
       url: siteImageUrl("ambiente-unidades/recepcao-clinica-crescer.jpg"),
-      alt: "Recepção da Clínica Crescer"
+      alt: "Recepção da Clínica Crescer",
+      rotate: true
     },
     {
       url: siteImageUrl("ambiente-unidades/vila-crescer.jpg"),
-      alt: "Vila Crescer"
-    },
-    {
-      url: siteImageUrl("ambiente-unidades/ambiente-crescer.jpg"),
-      alt: "Ambiente acolhedor da Clínica Crescer"
-    },
-    {
-      url: siteImageUrl("ambiente-unidades/recepcao-clinica-crescer.jpg"),
-      alt: "Recepção da Clínica Crescer"
+      alt: "Vila Crescer",
+      rotate: false
     }
   ];
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isHovering, setIsHovering] = useState(false);
-  const [autoPlay, setAutoPlay] = useState(true);
-  const [reducedMotion, setReducedMotion] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const autoplayRef = useRef<NodeJS.Timeout | null>(null);
-
   const [staff, setStaff] = useState<StaffMember[]>([]);
-
-  useEffect(() => {
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    setReducedMotion(prefersReducedMotion);
-  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -66,104 +49,6 @@ const Sobre = () => {
     return () => { mounted = false; };
   }, []);
 
-  useEffect(() => {
-    if (!autoPlay || reducedMotion || isHovering) {
-      if (autoplayRef.current) {
-        clearInterval(autoplayRef.current);
-        autoplayRef.current = null;
-      }
-      return;
-    }
-
-    autoplayRef.current = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % carouselImages.length);
-    }, 5000);
-
-    return () => {
-      if (autoplayRef.current) {
-        clearInterval(autoplayRef.current);
-      }
-    };
-  }, [autoPlay, reducedMotion, isHovering, carouselImages.length]);
-
-  const getSlideStyle = (index: number) => {
-    if (reducedMotion) {
-      return index === currentIndex 
-        ? { opacity: 1, transform: "translateX(0)" }
-        : { opacity: 0, transform: "translateX(0)" };
-    }
-
-    const totalSlides = carouselImages.length;
-    const offset = (index - currentIndex + totalSlides) % totalSlides;
-
-    if (offset === 0) {
-      return {
-        opacity: 1,
-        transform: "translateX(0) translateZ(0) scale(1)",
-        zIndex: 10
-      };
-    } else if (offset === 1 || offset === totalSlides - 1) {
-      const direction = offset === 1 ? 1 : -1;
-      return {
-        opacity: 0.65,
-        transform: `translateX(${direction * 170}px) translateZ(-170px) scale(0.75) rotateY(${direction * -12}deg)`,
-        zIndex: 5
-      };
-    } else if (offset === 2 || offset === totalSlides - 2) {
-      const direction = offset === 2 ? 1 : -1;
-      return {
-        opacity: 0.35,
-        transform: `translateX(${direction * 250}px) translateZ(-260px) scale(0.62) rotateY(${direction * -16}deg)`,
-        zIndex: 1
-      };
-    } else {
-      return {
-        opacity: 0,
-        transform: "translateX(0) translateZ(-320px) scale(0.52)",
-        zIndex: 0
-      };
-    }
-  };
-
-  const goToSlide = (index: number) => {
-    setCurrentIndex(index);
-    setAutoPlay(false);
-  };
-
-  const goToPrev = () => {
-    setCurrentIndex((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
-    setAutoPlay(false);
-  };
-
-  const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % carouselImages.length);
-    setAutoPlay(false);
-  };
-
-  const touchStartX = useRef(0);
-  const touchStartY = useRef(0);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const touchEndX = e.changedTouches[0].clientX;
-    const touchEndY = e.changedTouches[0].clientY;
-    
-    const deltaX = touchEndX - touchStartX.current;
-    const deltaY = touchEndY - touchStartY.current;
-    
-    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
-      if (deltaX > 0) {
-        goToPrev();
-      } else {
-        goToNext();
-      }
-    }
-  };
-
   const founder = staff.find(m => m.member_type === 'founder' || m.is_featured) || staff[0];
   const visibleTeam = staff.filter(m => m.id !== founder?.id).slice(0, 6);
 
@@ -178,7 +63,7 @@ const Sobre = () => {
     >
       <article className="bg-[#fbfafc] text-[#262033]">
         {/* Hero Section */}
-        <section className="relative py-24 md:py-28">
+        <section className="relative py-20 md:py-24">
           <div
             aria-hidden="true"
             className="absolute inset-0"
@@ -192,7 +77,7 @@ const Sobre = () => {
 
           <div className="mx-auto w-full max-w-[1180px] px-5 sm:px-6 lg:px-8 relative">
             {/* Title */}
-            <header className="text-center mb-14 md:mb-18">
+            <header className="text-center mb-10 md:mb-12">
               <h2 className="text-balance text-4xl font-semibold leading-[1.06] text-[#262033] md:text-5xl lg:text-6xl">
                 Sobre a Clínica Crescer
               </h2>
@@ -201,110 +86,25 @@ const Sobre = () => {
               </p>
             </header>
 
-            {/* Carousel - reduced size */}
-            <div className="relative h-[256px] lg:h-[304px]">
-              <div
-                ref={containerRef}
-                className="relative h-full w-full"
-                onMouseEnter={() => setIsHovering(true)}
-                onMouseLeave={() => setIsHovering(false)}
-                onTouchStart={handleTouchStart}
-                onTouchEnd={handleTouchEnd}
-              >
-                <div className="absolute inset-0 flex items-center justify-center" style={{ perspective: "1500px" }}>
-                  {carouselImages.map((image, index) => {
-                    const isActive = index === currentIndex;
-                    const style = getSlideStyle(index);
-
-                    return (
-                      <div
-                        key={index}
-                        className={cn(
-                          "absolute inset-0 flex items-center justify-center transition-all duration-700 ease-out",
-                          isActive && reducedMotion && "animate-[heroFloat_6s_ease-in-out_infinite]"
-                        )}
-                        style={{
-                          ...style,
-                          pointerEvents: isActive ? 'auto' : 'none',
-                        }}
-                        onClick={() => !isActive && goToSlide(index)}
-                        role="button"
-                        tabIndex={isActive ? 0 : -1}
-                        aria-label={`Ver ${image.alt}`}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            goToSlide(index);
-                          }
-                        }}
-                      >
-                        <div
-                          className={cn(
-                            "w-[55%] max-w-[270px] rounded-[24px] overflow-hidden shadow-[0_16px 52px_rgba(62,46,89,0.12)]",
-                            isActive ? "shadow-[0_20px 64px_rgba(62,46,89,0.15)]" : "shadow-[0_12px 40px_rgba(62,46,89,0.08)]"
-                          )}
-                        >
-                          <img
-                            src={image.url}
-                            alt={image.alt}
-                            className={cn(
-                              "h-full w-full object-cover",
-                              !isActive && "cursor-pointer"
-                            )}
-                            loading="eager"
-                          />
-                          <div
-                            className={cn(
-                              "pointer-events-none absolute inset-0",
-                              isActive
-                                ? "bg-gradient-to-tr from-[#262033]/5 via-transparent to-[#fff3c7]/4"
-                                : "bg-gradient-to-br from-white/8 to-transparent"
-                            )}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
+            {/* Premium Gallery - 3 images */}
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {galleryImages.map((image, index) => (
+                <div
+                  key={index}
+                  className={cn(
+                    "group overflow-hidden rounded-2xl border border-white/40 bg-white shadow-[0_12px 40px_rgba(62,46,89,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px 60px_rgba(62,46,89,0.12)]",
+                    image.rotate && "lg:rotate-2 lg:hover:rotate-0"
+                  )}
+                >
+                  <img
+                    src={image.url}
+                    alt={image.alt}
+                    className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    loading="eager"
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-[#262033]/4 via-transparent to-[#fff3c7]/3" />
                 </div>
-
-                {/* Navigation Arrows */}
-                {!reducedMotion && (
-                  <>
-                    <button
-                      onClick={goToPrev}
-                      className="absolute left-0 top-1/2 -translate-y-1/2 z-40 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-[#5b3d86] shadow-sm transition-all hover:bg-white hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#8d63c7] focus:ring-offset-2"
-                      aria-label="Imagem anterior"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={goToNext}
-                      className="absolute right-0 top-1/2 -translate-y-1/2 z-40 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-[#5b3d86] shadow-sm transition-all hover:bg-white hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#8d63c7] focus:ring-offset-2"
-                      aria-label="Próxima imagem"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                  </>
-                )}
-
-                {/* Dots Indicator */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 flex gap-2">
-                  {carouselImages.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => goToSlide(index)}
-                      className={cn(
-                        "h-1.5 rounded-full transition-all duration-300",
-                        index === currentIndex
-                          ? "w-4 bg-[#5b3d86]"
-                          : "w-1.5 bg-white/60 hover:bg-white/80"
-                      )}
-                      aria-label={`Ir para imagem ${index + 1}`}
-                      aria-current={index === currentIndex ? "true" : "false"}
-                    />
-                  ))}
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </section>
@@ -528,7 +328,7 @@ const Sobre = () => {
               </div>
 
               {founder && (
-                <div className="mb-10 rounded-[28px] border border-[#eee7f6] bg-white p-6 shadow-[0_14px_45px_rgba(62,46,89,0.08)] sm:p-8">
+                <div className="mb-10 rounded-[28px] border border-[#eee7f6] bg-white p-6 shadow-[0_14px 45px_rgba(62,46,89,0.08)] sm:p-8">
                   <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
                     <div className="shrink-0">
                       {founder.photo_url ? (
@@ -575,7 +375,7 @@ const Sobre = () => {
                     <div
                       key={member.id}
                       className={cn(
-                        "group overflow-hidden rounded-[22px] border border-[#eee7f6] bg-white shadow-[0_14px_45px_rgba(62,46,89,0.08)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_22px_64px_rgba(62,46,89,0.12)]",
+                        "group overflow-hidden rounded-[22px] border border-[#eee7f6] bg-white shadow-[0_14px 45px_rgba(62,46,89,0.08)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_22px 64px_rgba(62,46,89,0.12)]",
                         index === 1 && "lg:translate-y-6"
                       )}
                     >
