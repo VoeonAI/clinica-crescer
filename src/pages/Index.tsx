@@ -31,7 +31,7 @@ import { cn } from "@/lib/utils";
 
 const ASSETS = {
   hero: "ambiente-unidades/recepcao-clinica-crescer.jpg",
-  about: "ambiente-unidades/ambiente-crescer.jpg",
+  about: "ambiente-unidades/crianca-vila-crescer.png",
   facade: "ambiente-unidades/fachada-unidade-criancas-crescer.jpg",
   village: "ambiente-unidades/vila-crescer.jpg",
   texturePurple: "backgrounds/textura-roxa.png",
@@ -451,14 +451,29 @@ const Index = () => {
           <Container className="grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
             <div className="relative order-2 lg:order-1">
               <div className="absolute -left-8 -top-8 hidden h-40 w-40 rounded-full bg-[#dff1ff] lg:block" />
+              <div className="absolute -right-4 bottom-16 hidden h-36 w-36 rounded-full bg-[#fff3c7]/45 blur-xl lg:block" />
               <div
-                className="relative h-[460px] overflow-hidden rounded-[46px] shadow-[0_30px_90px_rgba(62,46,89,0.14)]"
+                aria-hidden="true"
+                className="absolute inset-6 rounded-[46px] opacity-20"
+                style={{
+                  backgroundImage: `url("${siteImageUrl(ASSETS.about)}")`,
+                  backgroundPosition: "center",
+                  backgroundSize: "cover",
+                  transform: "translateY(18px) scale(1.03) rotate(-2deg)",
+                }}
+              />
+              <div
+                className="group relative h-[460px] overflow-hidden rounded-[46px] shadow-[0_22px_58px_rgba(62,46,89,0.14)]"
                 style={{ clipPath: "polygon(0 0, 100% 8%, 94% 100%, 8% 94%)" }}
               >
-                <HomeImage src={ASSETS.about} alt="Ambiente terapêutico da Clínica Crescer" className="h-full w-full" />
+                <div className="absolute inset-0 scale-[1.04] transition-transform duration-700 ease-out group-hover:scale-[1.07]">
+                  <HomeImage src={ASSETS.about} alt="Criança em ambiente acolhedor da Vila Crescer" className="h-full w-full" />
+                </div>
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-[#262033]/24 via-transparent to-[#fff3c7]/18" />
+                <div className="pointer-events-none absolute -bottom-10 left-10 h-28 w-28 rounded-full bg-[#8d63c7]/10 blur-xl transition-transform duration-700 ease-out group-hover:-translate-y-1" />
               </div>
-              <Card className="absolute -bottom-8 right-4 max-w-sm bg-white/95 backdrop-blur">
-                <p className="text-sm leading-7 text-[#5d546b]">
+              <Card className="absolute -bottom-8 right-4 max-w-sm border-white/80 bg-white/88 shadow-[0_22px_70px_rgba(62,46,89,0.16)] backdrop-blur-xl">
+                <p className="text-sm leading-7 text-[#342d3f]">
                   A clínica foi pensada para unir técnica, conforto e acolhimento em uma experiência menos fria e mais humana.
                 </p>
               </Card>
@@ -472,14 +487,37 @@ const Index = () => {
               />
               <div className="mt-8 grid gap-4 sm:grid-cols-2">
                 {[
-                  "Avaliação para orientar decisões clínicas e escolares com mais segurança.",
-                  "Intervenções conectadas à rotina da criança, da família e da escola.",
-                  "Equipe integrada para enxergar o desenvolvimento por vários ângulos.",
-                  "Acompanhamento que valoriza vínculo, autonomia e qualidade de vida.",
+                  {
+                    text: "Avaliação para orientar decisões clínicas e escolares com mais segurança.",
+                    className: "border-[#8d63c7]/20 bg-[#7d55b8] text-white shadow-[0_18px_55px_rgba(91,61,134,0.22)]",
+                    icon: "text-[#fff3c7]",
+                  },
+                  {
+                    text: "Intervenções conectadas à rotina da criança, da família e da escola.",
+                    className: "border-[#ffd96f]/50 bg-[#fff1b8] text-[#342d3f] shadow-[0_18px_55px_rgba(202,160,44,0.16)]",
+                    icon: "text-[#8d63c7]",
+                  },
+                  {
+                    text: "Equipe integrada para enxergar o desenvolvimento por vários ângulos.",
+                    className: "border-[#b8e0f4]/60 bg-[#dff1ff] text-[#263647] shadow-[0_18px_55px_rgba(80,139,170,0.16)]",
+                    icon: "text-[#5b3d86]",
+                  },
+                  {
+                    text: "Acompanhamento que valoriza vínculo, autonomia e qualidade de vida.",
+                    className: "border-[#f3a38f]/45 bg-[#e98773] text-white shadow-[0_18px_55px_rgba(205,103,82,0.2)]",
+                    icon: "text-[#fff3c7]",
+                  },
                 ].map((item) => (
-                  <div key={item} className="rounded-3xl border border-[#eee7f6] bg-white/80 p-5 shadow-[0_14px_45px_rgba(62,46,89,0.06)]">
-                    <CheckCircle2 className="mb-4 h-5 w-5 text-[#8d63c7]" />
-                    <p className="text-sm leading-7 text-[#5d546b]">{item}</p>
+                  <div
+                    key={item.text}
+                    className={cn(
+                      "group relative overflow-hidden rounded-3xl border p-5 transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(62,46,89,0.18)]",
+                      item.className,
+                    )}
+                  >
+                    <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/22 transition-transform duration-500 group-hover:scale-110" />
+                    <CheckCircle2 className={cn("relative mb-4 h-5 w-5", item.icon)} />
+                    <p className="relative text-sm leading-7">{item.text}</p>
                   </div>
                 ))}
               </div>
@@ -490,18 +528,30 @@ const Index = () => {
           </Container>
         </Section>
 
-        <Section tone="lilac" className="overflow-visible">
+        <Section tone="lilac" className="overflow-visible bg-[#5b3d86]">
           <div
             aria-hidden="true"
-            className="absolute inset-0 opacity-[0.09]"
-            style={{ backgroundImage: `url("${siteImageUrl(ASSETS.patternPurple)}")`, backgroundSize: "460px auto" }}
+            className="pointer-events-none absolute inset-0 z-0 opacity-100"
+            style={{
+              backgroundImage: `url("${siteImageUrl(ASSETS.texturePurple)}")`,
+              backgroundPosition: "center top",
+              backgroundRepeat: "repeat",
+              backgroundSize: "760px auto",
+            }}
           />
-          <Container className="relative">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 z-0 bg-[linear-gradient(135deg,rgba(91,61,134,0.12),rgba(38,32,51,0.08)_52%,rgba(91,61,134,0.18)),linear-gradient(to_bottom,rgba(38,32,51,0.14),transparent_38%,rgba(38,32,51,0.18))]"
+          />
+          <Container className="relative z-10">
             <div className="mb-12 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
               <Heading
                 eyebrow="Cuidado especializado"
                 title="Avaliação neuropsicológica e intervenção baseada em dados"
                 description="Cada família chega com uma pergunta. Nosso papel é transformar essa pergunta em avaliação, plano de intervenção e acompanhamento com metas claras."
+                className="[&>p:first-child]:!text-white/78"
+                titleClassName="!text-white"
+                descriptionClassName="!text-white/82"
               />
               <Button asChild variant="secondary" withArrow className="md:mb-1">
                 <Link to="/avaliacao-neuropsicologica">Entender a avaliação</Link>
