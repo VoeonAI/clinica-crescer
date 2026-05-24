@@ -1,5 +1,165 @@
-<article className="bg-[#fbfafc] text-[#262033]">
-        <Section className="bg-[#fbfafc] pb-16 pt-16 md:pb-24 md:pt-20 overflow-visible -mt-2 md:-mt-4" spacing="compact">
+import { useEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+import { PublicPage } from "@/components/PublicPage";
+import { siteImageUrl } from "@/styles/theme";
+import { cn } from "@/lib/utils";
+
+const Sobre = () => {
+  const assets = {
+    textureYellow: "backgrounds/textura-amarela.png",
+  };
+
+  const carouselImages = [
+    {
+      url: siteImageUrl("ambiente-unidades/crianca-vila-crescer.png"),
+      alt: "Criança brincando na Vila Crescer"
+    },
+    {
+      url: siteImageUrl("ambiente-unidades/terapia-aba-crescer.png"),
+      alt: "Sessão de Terapia ABA na Clínica Crescer"
+    },
+    {
+      url: siteImageUrl("ambiente-unidades/familia-crescer.png"),
+      alt: "Família na Clínica Crescer"
+    },
+    {
+      url: siteImageUrl("ambiente-unidades/fachada-unidade-criancas-crescer.jpg"),
+      alt: "Fachada da unidade crianças da Clínica Crescer"
+    },
+    {
+      url: siteImageUrl("ambiente-unidades/vila-crescer.jpg"),
+      alt: "Vila Crescer"
+    }
+  ];
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovering, setIsHovering] = useState(false);
+  const [autoPlay, setAutoPlay] = useState(true);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const autoplayRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setReducedMotion(prefersReducedMotion);
+  }, []);
+
+  useEffect(() => {
+    if (!autoPlay || reducedMotion || isHovering) {
+      if (autoplayRef.current) {
+        clearInterval(autoplayRef.current);
+        autoplayRef.current = null;
+      }
+      return;
+    }
+
+    autoplayRef.current = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % carouselImages.length);
+    }, 5000);
+
+    return () => {
+      if (autoplayRef.current) {
+        clearInterval(autoplayRef.current);
+      }
+    };
+  }, [autoPlay, reducedMotion, isHovering, carouselImages.length]);
+
+  const getSlideStyle = (index: number) => {
+    if (reducedMotion) {
+      return index === currentIndex 
+        ? { opacity: 1, transform: "translateX(0)" }
+        : { opacity: 0, transform: "translateX(0)" };
+    }
+
+    const totalSlides = carouselImages.length;
+    const offset = (index - currentIndex + totalSlides) % totalSlides;
+
+    if (offset === 0) {
+      return {
+        opacity: 1,
+        transform: "translateX(0) translateZ(0) scale(1)",
+        zIndex: 10
+      };
+    } else if (offset === 1 || offset === totalSlides - 1) {
+      const direction = offset === 1 ? 1 : -1;
+      return {
+        opacity: 0.65,
+        transform: `translateX(${direction * 280}px) translateZ(-280px) scale(0.82) rotateY(${direction * -18}deg)`,
+        zIndex: 5
+      };
+    } else if (offset === 2 || offset === totalSlides - 2) {
+      const direction = offset === 2 ? 1 : -1;
+      return {
+        opacity: 0.35,
+        transform: `translateX(${direction * 400}px) translateZ(-420px) scale(0.72) rotateY(${direction * -24}deg)`,
+        zIndex: 1
+      };
+    } else {
+      return {
+        opacity: 0,
+        transform: "translateX(0) translateZ(-520px) scale(0.62)",
+        zIndex: 0
+      };
+    }
+  };
+
+  const goToSlide = (index: number) => {
+    setCurrentIndex(index);
+    setAutoPlay(false);
+  };
+
+  const goToPrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
+    setAutoPlay(false);
+  };
+
+  const goToNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % carouselImages.length);
+    setAutoPlay(false);
+  };
+
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    // Just tracking, no action needed
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    
+    const deltaX = touchEndX - touchStartX.current;
+    const deltaY = touchEndY - touchStartY.current;
+    
+    const minSwipeDistance = 50;
+    
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
+      if (deltaX > 0) {
+        goToPrev();
+      } else {
+        goToNext();
+      }
+    }
+  };
+
+  return (
+    <PublicPage
+      title="Sobre a Clínica Crescer"
+      description="Conheça nossa história, missão e equipe multidisciplinar especializada em desenvolvimento infantil."
+      breadcrumbs={[
+        { name: 'Home', url: '/' },
+        { name: 'Sobre', url: '/sobre' }
+      ]}
+    >
+      <article className="bg-[#fbfafc] text-[#262033]">
+        <section className="relative overflow-hidden bg-[#fbfafc] pb-16 pt-16 md:pb-24 md:pt-20 -mt-2 md:-mt-4">
           <div
             aria-hidden="true"
             className="absolute inset-0 opacity-[0.26] mix-blend-multiply"
@@ -18,7 +178,8 @@
             aria-hidden="true"
             className="absolute left-8 top-24 hidden h-64 w-64 rounded-full bg-[#dff1ff]/60 blur-3xl md:block"
           />
-          <Container className="relative grid gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
+          
+          <div className="mx-auto w-full max-w-[1180px] px-5 sm:px-6 lg:px-8 relative grid gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
             <header className="flex flex-col justify-center">
               <h1 className="text-balance text-4xl font-semibold leading-[1.06] text-[#262033] md:text-5xl lg:text-6xl">
                 Sobre a Clínica Crescer
@@ -133,6 +294,13 @@
                 </div>
               </div>
             </div>
-          </Container>
-        </Section>
-</article>
+          </div>
+        </section>
+
+        {/* Rest of the page sections would go here */}
+      </article>
+    </PublicPage>
+  );
+};
+
+export default Sobre;
