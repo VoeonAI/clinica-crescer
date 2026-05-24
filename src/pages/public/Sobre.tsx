@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, CheckCircle2, HeartHandshake, Sparkles, Users } from "lucide-react";
+import { ArrowRight, CheckCircle2, HeartHandshake, Sparkles, Users, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { BreadcrumbSchema } from "@/components/Schemas";
 import { SEOHead } from "@/components/SEOHead";
@@ -23,11 +23,20 @@ const assets = {
   animatedSvg: "svg-animado/crescer-logoforma-animada-carregando.svg",
 };
 
-const heroImages = {
-  fachada: "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/site-images/ambiente-unidades/fachada-proximo-crescer.jpg",
-  recepcao: "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/site-images/ambiente-unidades/recepcao-clinica-crescer.jpg",
-  vila: "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/site-images/ambiente-unidades/vila-crescer.jpg",
-};
+const carouselImages = [
+  {
+    url: "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/site-images/ambiente-unidades/fachada-proximo-crescer.jpg",
+    alt: "Fachada da Clínica Crescer"
+  },
+  {
+    url: "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/site-images/ambiente-unidades/recepcao-clinica-crescer.jpg",
+    alt: "Recepção da Clínica Crescer"
+  },
+  {
+    url: "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/site-images/ambiente-unidades/vila-crescer.jpg",
+    alt: "Vila Crescer - ambiente acolhedor"
+  }
+];
 
 const values = [
   "Acolhimento e respeito à diversidade",
@@ -128,6 +137,12 @@ const PageImage = ({
 
 const Sobre = () => {
   const [staff, setStaff] = useState<StaffMember[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovering, setIsHovering] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartX, setDragStartX] = useState(0);
+  const reducedMotion = typeof window !== 'undefined' && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -160,6 +175,82 @@ const Sobre = () => {
     () => staff.filter((member) => member.id !== featuredMember?.id),
     [featuredMember?.id, staff],
   );
+
+  // Autoplay
+  useEffect(() => {
+    if (reducedMotion || isHovering || isDragging) return;
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % 3);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [isHovering, isDragging, reducedMotion]);
+
+  const goToSlide = useCallback((index: number) => {
+    setCurrentIndex(index);
+  }, []);
+
+  const goToNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % 3);
+  }, []);
+
+  const goToPrev = useCallback(() => {
+    setCurrentIndex((prev) => (prev - 1 + 3) % 3);
+  }, []);
+
+  // Touch handling
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setDragStartX(e.touches[0].clientX);
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    const diff = dragStartX - e.touches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) {
+        goToNext();
+      } else {
+        goToPrev();
+      }
+      setIsDragging(false);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
+
+  const getSlideStyle = (index: number) => {
+    const relativeIndex = (index - currentIndex + 3) % 3;
+    
+    if (relativeIndex === 0) {
+      // Active slide - front, larger, sharp
+      return {
+        transform: reducedMotion ? 'none' : 'translateX(0) translateZ(0) scale(1)',
+        opacity: 1,
+        zIndex: 3,
+        filter: 'brightness(1)',
+      };
+    } else if (relativeIndex === 1) {
+      // Right side - behind, rotated
+      return {
+        transform: reducedMotion ? 'none' : 'translateX(25%) translateZ(-60px) scale(0.85) rotateY(-8deg)',
+        opacity: 0.65,
+        zIndex: 2,
+        filter: 'brightness(0.85)',
+      };
+    } else {
+      // Left side - behind, rotated
+      return {
+        transform: reducedMotion ? 'none' : 'translateX(-25%) translateZ(-60px) scale(0.85) rotateY(8deg)',
+        opacity: 0.65,
+        zIndex: 1,
+        filter: 'brightness(0.85)',
+      };
+    }
+  };
 
   return (
     <>
@@ -196,73 +287,108 @@ const Sobre = () => {
               </p>
             </header>
 
-            <div className="relative min-h-[520px] lg:min-h-[580px]">
-              {/* Main Image - Vila Crescer - Right side, largest */}
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-[65%] max-w-[480px] rounded-[40px] overflow-hidden shadow-[0_28px 80px_rgba(62,46,89,0.18)]">
-                <img
-                  src={heroImages.vila}
-                  alt="Vila Crescer - ambiente acolhedor"
-                  className="h-full w-full object-cover"
-                  loading="eager"
-                />
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#262033]/10 via-transparent to-[#fff3c7]/8" />
-              </div>
-
-              {/* Secondary Image - Recepção - Top Left, smaller with subtle rotation */}
-              <div 
-                className="absolute left-0 top-[5%] z-30 w-[42%] max-w-[260px] rounded-[32px] overflow-hidden shadow-[0_20px 60px_rgba(62,46,89,0.14)] animate-[heroFloat_8s_ease-in-out_infinite] lg:block"
-                style={{ transform: "rotate(-2deg)" }}
+            <div className="relative min-h-[420px] lg:min-h-[480px]">
+              <div
+                ref={containerRef}
+                className="relative h-full w-full"
+                onMouseEnter={() => setIsHovering(true)}
+                onMouseLeave={() => setIsHovering(false)}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
               >
-                <img
-                  src={heroImages.recepcao}
-                  alt="Recepção da Clínica Crescer"
-                  className="h-full w-full object-cover"
-                  loading="eager"
-                />
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/16 to-transparent" />
-              </div>
+                <div className="absolute inset-0 flex items-center justify-center perspective-[1200px]">
+                  {carouselImages.map((image, index) => {
+                    const isActive = index === currentIndex;
+                    const style = getSlideStyle(index);
 
-              {/* Secondary Image - Fachada - Bottom Left, medium */}
-              <div className="absolute left-[8%] bottom-[5%] z-25 w-[50%] max-w-[320px] rounded-[36px] overflow-hidden shadow-[0_24px 70px_rgba(62,46,89,0.16)] animate-[heroFloat_7s_ease-in-out_1s_infinite] lg:block">
-                <img
-                  src={heroImages.fachada}
-                  alt="Fachada da Clínica Crescer"
-                  className="h-full w-full object-cover"
-                  loading="eager"
-                />
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-tl from-white/12 to-transparent" />
-              </div>
-
-              {/* Mobile Stacked Layout */}
-              <div className="hidden lg:hidden flex flex-col gap-4 pt-4">
-                <div className="relative rounded-[32px] overflow-hidden shadow-[0_20px 60px_rgba(62,46,89,0.14)]">
-                  <img
-                    src={heroImages.vila}
-                    alt="Vila Crescer - ambiente acolhedor"
-                    className="aspect-[4/3] w-full object-cover"
-                    loading="eager"
-                  />
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#262033]/10 via-transparent to-[#fff3c7]/8" />
+                    return (
+                      <div
+                        key={index}
+                        className={cn(
+                          "absolute inset-0 flex items-center justify-center transition-all duration-700 ease-out",
+                          isActive && reducedMotion && "animate-[heroFloat_6s_ease-in-out_infinite]"
+                        )}
+                        style={{
+                          ...style,
+                          pointerEvents: isActive ? 'auto' : 'none',
+                        }}
+                        onClick={() => !isActive && goToSlide(index)}
+                        role="button"
+                        tabIndex={isActive ? 0 : -1}
+                        aria-label={`Ver ${image.alt}`}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            goToSlide(index);
+                          }
+                        }}
+                      >
+                        <div
+                          className={cn(
+                            "w-[85%] max-w-[440px] rounded-[32px] overflow-hidden shadow-[0_32px_90px_rgba(62,46,89,0.18)]",
+                            isActive ? "shadow-[0_36px_100px_rgba(62,46,89,0.22)]" : "shadow-[0_24px_70px_rgba(62,46,89,0.14)]"
+                          )}
+                        >
+                          <img
+                            src={image.url}
+                            alt={image.alt}
+                            className={cn(
+                              "h-full w-full object-cover",
+                              !isActive && "cursor-pointer"
+                            )}
+                            loading="eager"
+                          />
+                          <div 
+                            className={cn(
+                              "pointer-events-none absolute inset-0",
+                              isActive 
+                                ? "bg-gradient-to-tr from-[#262033]/8 via-transparent to-[#fff3c7]/6" 
+                                : "bg-gradient-to-br from-white/12 to-transparent"
+                            )} 
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="relative rounded-[28px] overflow-hidden shadow-[0_18px 55px_rgba(62,46,89,0.12)]">
-                    <img
-                      src={heroImages.recepcao}
-                      alt="Recepção da Clínica Crescer"
-                      className="aspect-square w-full object-cover"
-                      loading="eager"
+
+                {/* Navigation Arrows */}
+                {!reducedMotion && (
+                  <>
+                    <button
+                      onClick={goToPrev}
+                      className="absolute left-0 top-1/2 -translate-y-1/2 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-[#5b3d86] shadow-lg transition-all hover:bg-white hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#8d63c7] focus:ring-offset-2 md:-left-4"
+                      aria-label="Imagem anterior"
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </button>
+                    <button
+                      onClick={goToNext}
+                      className="absolute right-0 top-1/2 -translate-y-1/2 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-[#5b3d86] shadow-lg transition-all hover:bg-white hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#8d63c7] focus:ring-offset-2 md:-right-4"
+                      aria-label="Próxima imagem"
+                    >
+                      <ChevronRight className="h-5 w-5" />
+                    </button>
+                  </>
+                )}
+
+                {/* Dots Indicator */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 flex gap-2">
+                  {carouselImages.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => goToSlide(index)}
+                      className={cn(
+                        "h-2 rounded-full transition-all duration-300",
+                        index === currentIndex
+                          ? "w-6 bg-[#5b3d86]"
+                          : "w-2 bg-white/60 hover:bg-white/80"
+                      )}
+                      aria-label={`Ir para imagem ${index + 1}`}
+                      aria-current={index === currentIndex ? "true" : "false"}
                     />
-                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/16 to-transparent" />
-                  </div>
-                  <div className="relative rounded-[28px] overflow-hidden shadow-[0_18px 55px_rgba(62,46,89,0.12)]">
-                    <img
-                      src={heroImages.fachada}
-                      alt="Fachada da Clínica Crescer"
-                      className="aspect-square w-full object-cover"
-                      loading="eager"
-                    />
-                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-tl from-white/12 to-transparent" />
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>
