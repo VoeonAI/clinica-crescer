@@ -106,20 +106,20 @@ const Sobre = () => {
       const direction = offset === 1 ? 1 : -1;
       return {
         opacity: 0.65,
-        transform: `translateX(${direction * 280}px) translateZ(-280px) scale(0.82) rotateY(${direction * -18}deg)`,
+        transform: `translateX(${direction * 220}px) translateZ(-220px) scale(0.80) rotateY(${direction * -15}deg)`,
         zIndex: 5
       };
     } else if (offset === 2 || offset === totalSlides - 2) {
       const direction = offset === 2 ? 1 : -1;
       return {
         opacity: 0.35,
-        transform: `translateX(${direction * 400}px) translateZ(-420px) scale(0.72) rotateY(${direction * -24}deg)`,
+        transform: `translateX(${direction * 320}px) translateZ(-340px) scale(0.68) rotateY(${direction * -20}deg)`,
         zIndex: 1
       };
     } else {
       return {
         opacity: 0,
-        transform: "translateX(0) translateZ(-520px) scale(0.62)",
+        transform: "translateX(0) translateZ(-420px) scale(0.58)",
         zIndex: 0
       };
     }
@@ -177,8 +177,8 @@ const Sobre = () => {
       ]}
     >
       <article className="bg-[#fbfafc] text-[#262033]">
-        {/* Hero Section — text on top, carousel below */}
-        <section className="relative py-16 md:py-20">
+        {/* Hero Section */}
+        <section className="relative py-20 md:py-24">
           <div
             aria-hidden="true"
             className="absolute inset-0"
@@ -187,14 +187,12 @@ const Sobre = () => {
               backgroundPosition: "center, center top",
               backgroundRepeat: "no-repeat, repeat-x",
               backgroundSize: "cover, 760px auto",
-              opacity: 0.26,
-              mixBlendMode: "multiply"
             }}
           />
 
           <div className="mx-auto w-full max-w-[1180px] px-5 sm:px-6 lg:px-8 relative">
             {/* Title */}
-            <header className="text-center mb-10 md:mb-14">
+            <header className="text-center mb-12 md:mb-16">
               <h2 className="text-balance text-4xl font-semibold leading-[1.06] text-[#262033] md:text-5xl lg:text-6xl">
                 Sobre a Clínica Crescer
               </h2>
@@ -203,8 +201,8 @@ const Sobre = () => {
               </p>
             </header>
 
-            {/* Carousel */}
-            <div className="relative h-[400px] lg:h-[480px]">
+            {/* Carousel - reduced size */}
+            <div className="relative h-[320px] lg:h-[380px]">
               <div
                 ref={containerRef}
                 className="relative h-full w-full"
@@ -242,8 +240,8 @@ const Sobre = () => {
                       >
                         <div
                           className={cn(
-                            "w-[85%] max-w-[440px] rounded-[32px] overflow-hidden shadow-[0_32px_90px_rgba(62,46,89,0.18)]",
-                            isActive ? "shadow-[0_42px_110px_rgba(62,46,89,0.24)]" : "shadow-[0_24px_70px_rgba(62,46,89,0.14)]"
+                            "w-[75%] max-w-[340px] rounded-[28px] overflow-hidden shadow-[0_24px 70px_rgba(62,46,89,0.14)]",
+                            isActive ? "shadow-[0_32px 88px_rgba(62,46,89,0.18)]" : "shadow-[0_18px 56px_rgba(62,46,89,0.10)]"
                           )}
                         >
                           <img
@@ -259,8 +257,8 @@ const Sobre = () => {
                             className={cn(
                               "pointer-events-none absolute inset-0",
                               isActive
-                                ? "bg-gradient-to-tr from-[#262033]/8 via-transparent to-[#fff3c7]/6"
-                                : "bg-gradient-to-br from-white/12 to-transparent"
+                                ? "bg-gradient-to-tr from-[#262033]/6 via-transparent to-[#fff3c7]/5"
+                                : "bg-gradient-to-br from-white/10 to-transparent"
                             )}
                           />
                         </div>
@@ -274,17 +272,17 @@ const Sobre = () => {
                   <>
                     <button
                       onClick={goToPrev}
-                      className="absolute left-0 top-1/2 -translate-y-1/2 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-[#5b3d86] shadow-lg transition-all hover:bg-white hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#8d63c7] focus:ring-offset-2"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-[#5b3d86] shadow-md transition-all hover:bg-white hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#8d63c7] focus:ring-offset-2"
                       aria-label="Imagem anterior"
                     >
-                      <ChevronLeft className="h-5 w-5" />
+                      <ChevronLeft className="h-4 w-4" />
                     </button>
                     <button
                       onClick={goToNext}
-                      className="absolute right-0 top-1/2 -translate-y-1/2 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-[#5b3d86] shadow-lg transition-all hover:bg-white hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#8d63c7] focus:ring-offset-2"
+                      className="absolute right-0 top-1/2 -translate-y-1/2 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-[#5b3d86] shadow-md transition-all hover:bg-white hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#8d63c7] focus:ring-offset-2"
                       aria-label="Próxima imagem"
                     >
-                      <ChevronRight className="h-5 w-5" />
+                      <ChevronRight className="h-4 w-4" />
                     </button>
                   </>
                 )}
@@ -298,7 +296,7 @@ const Sobre = () => {
                       className={cn(
                         "h-2 rounded-full transition-all duration-300",
                         index === currentIndex
-                          ? "w-6 bg-[#5b3d86]"
+                          ? "w-5 bg-[#5b3d86]"
                           : "w-2 bg-white/60 hover:bg-white/80"
                       )}
                       aria-label={`Ir para imagem ${index + 1}`}
