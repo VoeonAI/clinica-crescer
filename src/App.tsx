@@ -32,6 +32,7 @@ import AdminBlogNew from "./pages/admin/AdminBlogNew";
 import AdminEquipe from "./pages/admin/AdminEquipe";
 import AdminEquipeNew from "./pages/admin/AdminEquipeNew";
 import AdminUsuarios from "./pages/admin/AdminUsuarios";
+import AdminPromotionalBanner from "./pages/admin/AdminPromotionalBanner";
 
 const queryClient = new QueryClient();
 
@@ -78,6 +79,7 @@ const App = () => (
                 <Route path="equipe/novo" element={<AdminEquipeNew />} />
                 <Route path="equipe/:id/edit" element={<AdminEquipeNew />} />
                 <Route path="usuarios" element={<AdminUsuarios />} />
+                <Route path="faixa-promocional" element={<AdminPromotionalBanner />} />
               </Route>
 
               {/* Catch-all */}

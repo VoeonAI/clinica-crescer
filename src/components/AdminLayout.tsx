@@ -3,7 +3,7 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { SEOHead } from './SEOHead';
 import { Button } from './ui/button';
-import { LayoutDashboard, FileText, Users, LogOut, Settings } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, LogOut, Settings, Megaphone } from 'lucide-react';
 
 const AdminLayout: React.FC = () => {
   const location = useLocation();
@@ -14,6 +14,7 @@ const AdminLayout: React.FC = () => {
     { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/admin/blog', label: 'Blog', icon: FileText },
     { path: '/admin/equipe', label: 'Equipe', icon: Users },
+    { path: '/admin/faixa-promocional', label: 'Faixa Promocional', icon: Megaphone },
     { path: '/admin/usuarios', label: 'Usuários', icon: Settings },
   ];
 

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { CSSProperties } from "react";
+import type { CSSProperties, FormEvent } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -7,22 +7,24 @@ import {
   Brain,
   CheckCircle2,
   HeartHandshake,
+  MapPin,
+  MessageCircle,
+  Navigation,
+  Phone,
   Puzzle,
   Sparkles,
 } from "lucide-react";
 
 import { SEOHead } from "@/components/SEOHead";
 import { FAQSchema, MedicalClinicSchema } from "@/components/Schemas";
+import { PromotionalBanner } from "@/components/public/PromotionalBanner";
 import {
   Badge,
   Button,
   Card,
   Container,
-  CTABox,
   Heading,
-  PatternOverlay,
   Section,
-  SoftBackground,
 } from "@/components/public";
 import { siteImageUrl } from "@/styles/theme";
 import { blogService, BlogPost } from "@/services/blogService";
@@ -46,6 +48,45 @@ const ASSETS = {
 
 const HERO_VIDEO_URL =
   "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/video/A-clinica-crescer-cresceu-web-720.mp4";
+const WHATSAPP_BASE_URL = "https://wa.me/5511910163007";
+const WHATSAPP_DEFAULT_TEXT =
+  "Olá, vim pelo site da Clínica Crescer.";
+
+const units = [
+  {
+    name: "Clínica Crescer Crianças",
+    addressLines: ["Av. Sebastião Silveiro, 115", "Jardim do Sul", "Bragança Paulista - SP", "CEP: 12908-752"],
+    phone: "(11) 91016-3007",
+    tel: "tel:+5511910163007",
+    mapsUrl:
+      "https://www.google.com/maps/dir/?api=1&destination=Av.%20Sebasti%C3%A3o%20Silveiro%2C%20115%2C%20Jardim%20do%20Sul%2C%20Bragan%C3%A7a%20Paulista%20-%20SP%2C%2012908-752",
+  },
+  {
+    name: "Clínica Crescer Adolescentes",
+    addressLines: ["Rua José Domingues, 606", "Centro", "Bragança Paulista - SP", "CEP: 12900-260"],
+    phone: "(11) 91016-3007",
+    tel: "tel:+5511910163007",
+    mapsUrl:
+      "https://www.google.com/maps/dir/?api=1&destination=Rua%20Jos%C3%A9%20Domingues%2C%20606%2C%20Centro%2C%20Bragan%C3%A7a%20Paulista%20-%20SP%2C%2012900-260",
+  },
+];
+
+const interestOptions = [
+  "Avaliação neuropsicológica",
+  "Terapia ABA",
+  "Orientação familiar",
+  "Desenvolvimento infantil",
+  "Ainda não sei",
+];
+
+const contactReasonOptions = [
+  "Percebi alguns comportamentos em casa",
+  "A escola sugeriu procurar ajuda",
+  "Um profissional de saúde indicou",
+  "Dúvidas sobre desenvolvimento",
+  "Dificuldades de comportamento",
+  "Outro motivo",
+];
 
 const services = [
   {
@@ -179,12 +220,28 @@ const FloatingMark = ({ className }: { className?: string }) => (
   />
 );
 
+const WhatsAppIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 32 32" aria-hidden="true" className={className} fill="currentColor">
+    <path d="M16.02 3.2A12.67 12.67 0 0 0 5.3 22.62L3.6 28.8l6.33-1.66A12.65 12.65 0 1 0 16.02 3.2Zm0 22.98a10.43 10.43 0 0 1-5.32-1.46l-.38-.22-3.75.98 1-3.65-.25-.39a10.43 10.43 0 1 1 8.7 4.74Zm5.72-7.82c-.31-.16-1.85-.91-2.14-1.02-.29-.1-.5-.16-.71.16-.21.31-.82 1.02-1 1.23-.18.21-.37.23-.68.08-.31-.16-1.32-.49-2.52-1.55-.93-.83-1.56-1.86-1.74-2.17-.18-.31-.02-.48.14-.64.14-.14.31-.37.47-.55.16-.18.21-.31.31-.52.1-.21.05-.39-.03-.55-.08-.16-.71-1.71-.97-2.34-.26-.62-.52-.53-.71-.54h-.61c-.21 0-.55.08-.84.39-.29.31-1.1 1.08-1.1 2.63 0 1.55 1.13 3.05 1.29 3.26.16.21 2.23 3.4 5.4 4.77.75.32 1.34.52 1.8.66.76.24 1.45.21 1.99.13.61-.09 1.85-.76 2.11-1.49.26-.73.26-1.36.18-1.49-.08-.13-.29-.21-.6-.37Z" />
+  </svg>
+);
+
 const Index = () => {
   const [latestPosts, setLatestPosts] = useState<BlogPost[]>([]);
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loadingContent, setLoadingContent] = useState(true);
   const [heroVideoActive, setHeroVideoActive] = useState(false);
   const [abaHandOffset, setAbaHandOffset] = useState(0);
+  const [contactForm, setContactForm] = useState({
+    guardianName: "",
+    childName: "",
+    city: "",
+    phone: "",
+    interest: "",
+    reason: "",
+    message: "",
+  });
+  const [contactError, setContactError] = useState("");
   const heroVideoRef = useRef<HTMLVideoElement | null>(null);
   const abaSectionRef = useRef<HTMLElement | null>(null);
 
@@ -281,6 +338,58 @@ const Index = () => {
     video.currentTime = 0;
     video.muted = true;
     setHeroVideoActive(false);
+  };
+
+  const defaultWhatsAppUrl = `${WHATSAPP_BASE_URL}?text=${encodeURIComponent(WHATSAPP_DEFAULT_TEXT)}`;
+
+  const handleContactFieldChange = (field: keyof typeof contactForm, value: string) => {
+    setContactForm((current) => ({ ...current, [field]: value }));
+    if (contactError) setContactError("");
+  };
+
+  const handleContactSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const requiredFields = [
+      contactForm.guardianName,
+      contactForm.childName,
+      contactForm.city,
+      contactForm.phone,
+      contactForm.interest,
+      contactForm.reason,
+    ];
+
+    if (requiredFields.some((field) => !field.trim())) {
+      setContactError("Preencha os campos obrigatórios para enviar pelo WhatsApp.");
+      return;
+    }
+
+    const details = contactForm.message.trim();
+    const message = [
+      "Olá!",
+      "",
+      `Meu nome é *${contactForm.guardianName}* e estou entrando em contato pelo site da *Clínica Crescer*.`,
+      "",
+      "*Nome da criança/adolescente:*",
+      contactForm.childName,
+      "",
+      "*Cidade:*",
+      contactForm.city,
+      "",
+      "*Telefone para contato:*",
+      contactForm.phone,
+      "",
+      "*Serviço de interesse:*",
+      contactForm.interest,
+      "",
+      "*O que motivou o contato:*",
+      contactForm.reason,
+      "",
+      ...(details ? ["*Mais detalhes:*", details, ""] : []),
+      "Obrigado(a)! Aguardo retorno.",
+    ].join("\n");
+
+    window.open(`${WHATSAPP_BASE_URL}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
   };
 
   const homeSchema = {
@@ -483,6 +592,8 @@ const Index = () => {
             </div>
           </Container>
         </Section>
+
+        <PromotionalBanner />
 
         <Section tone="default" className="overflow-visible">
           <Container className="grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
@@ -963,19 +1074,144 @@ const Index = () => {
         </Section>
 
         <Section tone="lilac" spacing="compact">
-          <PatternOverlay />
-          <Container className="relative grid gap-6 md:grid-cols-[1fr_1fr] md:items-center">
-            <div>
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 opacity-[0.12]"
+            style={{ backgroundImage: `url("${siteImageUrl(ASSETS.patternPurple)}")`, backgroundSize: "440px auto" }}
+          />
+          <Container className="relative">
+            <div className="mb-10 max-w-3xl">
+              <Badge tone="blue" className="mb-4">Unidades da Clínica Crescer</Badge>
+              <h2 className="text-3xl font-semibold leading-tight text-[#262033] sm:text-4xl">
+                Encontre a unidade mais próxima para sua família
+              </h2>
+              <p className="mt-4 text-sm leading-7 text-[#5d546b] sm:text-base">
+                Atendimento especializado para crianças, adolescentes e famílias em Bragança Paulista.
+              </p>
+            </div>
+            <div className="grid gap-5 lg:grid-cols-2">
+              {units.map((unit) => (
+                <article
+                  key={unit.name}
+                  className="group rounded-[32px] border border-white/80 bg-white/88 p-6 shadow-[0_22px_70px_rgba(62,46,89,0.12)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_82px_rgba(62,46,89,0.16)] sm:p-7"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#f8f2ff] text-[#8d63c7]">
+                      <MapPin className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-[#262033]">{unit.name}</h3>
+                      <address className="mt-4 not-italic text-sm leading-7 text-[#5d546b]">
+                        {unit.addressLines.map((line) => (
+                          <span key={line} className="block">{line}</span>
+                        ))}
+                      </address>
+                      <a href={unit.tel} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#5b3d86]">
+                        <Phone className="h-4 w-4" />
+                        {unit.phone}
+                      </a>
+                    </div>
+                  </div>
+                  <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                    <Button asChild size="sm">
+                      <a href={defaultWhatsAppUrl} target="_blank" rel="noreferrer">
+                        <MessageCircle className="h-4 w-4" />
+                        Falar no WhatsApp
+                      </a>
+                    </Button>
+                    <Button asChild size="sm" variant="secondary">
+                      <a href={unit.mapsUrl} target="_blank" rel="noreferrer">
+                        <Navigation className="h-4 w-4" />
+                        Ver rota
+                      </a>
+                    </Button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </Container>
+        </Section>
+
+        <Section tone="lilac" spacing="compact" className="pt-8 md:pt-12">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 opacity-[0.12]"
+            style={{ backgroundImage: `url("${siteImageUrl(ASSETS.patternPurple)}")`, backgroundSize: "440px auto" }}
+          />
+          <Container className="relative grid gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-start">
+            <div className="rounded-[34px] border border-white/75 bg-white/82 p-6 shadow-[0_22px_70px_rgba(62,46,89,0.12)] backdrop-blur-xl sm:p-8">
               <Badge tone="blue" className="mb-4">Atendimento especializado para famílias da região</Badge>
               <h2 className="text-2xl font-semibold text-[#262033]">Cuidado próximo, orientação clara e escuta responsável</h2>
               <p className="mt-4 max-w-2xl text-sm leading-7 text-[#5d546b]">
-                A Clínica Crescer atende famílias que procuram avaliação, intervenção e orientação especializada. Endereço, telefone e WhatsApp podem ser conectados aqui quando os dados oficiais forem definidos no projeto.
+                A Clínica Crescer atende famílias que procuram avaliação, intervenção e orientação especializada. Conte com uma escuta inicial cuidadosa para entender o melhor próximo passo.
               </p>
+              <Button asChild className="mt-7" withArrow>
+                <a href={defaultWhatsAppUrl} target="_blank" rel="noreferrer">
+                  Falar com a Clínica Crescer
+                </a>
+              </Button>
             </div>
-            <SoftBackground image={ASSETS.facade} fallbackTone="blue" className="min-h-[280px] p-6" />
+            <form
+              onSubmit={handleContactSubmit}
+              className="rounded-[34px] border border-white/75 bg-white/90 p-5 shadow-[0_24px_80px_rgba(62,46,89,0.14)] backdrop-blur-xl sm:p-7"
+            >
+              <h3 className="text-xl font-semibold text-[#262033]">Conte rapidamente o que motivou seu contato</h3>
+              <p className="mt-3 text-sm leading-7 text-[#5d546b]">
+                Essas informações ajudam nossa equipe a entender o momento da família antes da primeira conversa.
+              </p>
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                <label className="space-y-2 text-sm font-medium text-[#342d3f]">
+                  <span>Nome do responsável</span>
+                  <input value={contactForm.guardianName} onChange={(event) => handleContactFieldChange("guardianName", event.target.value)} required className="h-12 w-full rounded-2xl border border-[#e8dff3] bg-white px-4 text-sm text-[#262033] outline-none transition focus:border-[#8d63c7] focus:ring-2 focus:ring-[#8d63c7]/15" />
+                </label>
+                <label className="space-y-2 text-sm font-medium text-[#342d3f]">
+                  <span>Nome da criança/adolescente</span>
+                  <input value={contactForm.childName} onChange={(event) => handleContactFieldChange("childName", event.target.value)} required className="h-12 w-full rounded-2xl border border-[#e8dff3] bg-white px-4 text-sm text-[#262033] outline-none transition focus:border-[#8d63c7] focus:ring-2 focus:ring-[#8d63c7]/15" />
+                </label>
+                <label className="space-y-2 text-sm font-medium text-[#342d3f]">
+                  <span>Cidade</span>
+                  <input value={contactForm.city} onChange={(event) => handleContactFieldChange("city", event.target.value)} required className="h-12 w-full rounded-2xl border border-[#e8dff3] bg-white px-4 text-sm text-[#262033] outline-none transition focus:border-[#8d63c7] focus:ring-2 focus:ring-[#8d63c7]/15" />
+                </label>
+                <label className="space-y-2 text-sm font-medium text-[#342d3f]">
+                  <span>Telefone/WhatsApp</span>
+                  <input value={contactForm.phone} onChange={(event) => handleContactFieldChange("phone", event.target.value)} required inputMode="tel" className="h-12 w-full rounded-2xl border border-[#e8dff3] bg-white px-4 text-sm text-[#262033] outline-none transition focus:border-[#8d63c7] focus:ring-2 focus:ring-[#8d63c7]/15" />
+                </label>
+                <label className="space-y-2 text-sm font-medium text-[#342d3f]">
+                  <span>Serviço de interesse</span>
+                  <select value={contactForm.interest} onChange={(event) => handleContactFieldChange("interest", event.target.value)} required className="h-12 w-full rounded-2xl border border-[#e8dff3] bg-white px-4 text-sm text-[#262033] outline-none transition focus:border-[#8d63c7] focus:ring-2 focus:ring-[#8d63c7]/15">
+                    <option value="">Selecione</option>
+                    {interestOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                  </select>
+                </label>
+                <label className="space-y-2 text-sm font-medium text-[#342d3f]">
+                  <span>O que motivou o contato?</span>
+                  <select value={contactForm.reason} onChange={(event) => handleContactFieldChange("reason", event.target.value)} required className="h-12 w-full rounded-2xl border border-[#e8dff3] bg-white px-4 text-sm text-[#262033] outline-none transition focus:border-[#8d63c7] focus:ring-2 focus:ring-[#8d63c7]/15">
+                    <option value="">Selecione</option>
+                    {contactReasonOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                  </select>
+                </label>
+                <label className="space-y-2 text-sm font-medium text-[#342d3f] sm:col-span-2">
+                  <span>Conte brevemente o que está acontecendo</span>
+                  <textarea value={contactForm.message} onChange={(event) => handleContactFieldChange("message", event.target.value)} rows={4} className="w-full resize-none rounded-2xl border border-[#e8dff3] bg-white px-4 py-3 text-sm text-[#262033] outline-none transition focus:border-[#8d63c7] focus:ring-2 focus:ring-[#8d63c7]/15" />
+                </label>
+              </div>
+              {contactError && <p className="mt-4 text-sm font-medium text-[#b94634]">{contactError}</p>}
+              <Button type="submit" className="mt-6" withArrow>
+                Enviar pelo WhatsApp
+              </Button>
+            </form>
           </Container>
         </Section>
       </main>
+      <a
+        href={defaultWhatsAppUrl}
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Falar com a Clínica Crescer pelo WhatsApp"
+        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25d366] text-white shadow-[0_18px_45px_rgba(37,211,102,0.32)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(37,211,102,0.42)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25d366] focus-visible:ring-offset-2 sm:bottom-6 sm:right-6"
+      >
+        <WhatsAppIcon className="h-7 w-7" />
+      </a>
     </>
   );
 };

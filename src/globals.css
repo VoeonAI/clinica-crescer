@@ -27,6 +27,16 @@
   }
 }
 
+@keyframes promoMarquee {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
