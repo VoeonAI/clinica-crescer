@@ -106,20 +106,20 @@ const Sobre = () => {
       const direction = offset === 1 ? 1 : -1;
       return {
         opacity: 0.65,
-        transform: `translateX(${direction * 220}px) translateZ(-220px) scale(0.80) rotateY(${direction * -15}deg)`,
+        transform: `translateX(${direction * 170}px) translateZ(-170px) scale(0.75) rotateY(${direction * -12}deg)`,
         zIndex: 5
       };
     } else if (offset === 2 || offset === totalSlides - 2) {
       const direction = offset === 2 ? 1 : -1;
       return {
         opacity: 0.35,
-        transform: `translateX(${direction * 320}px) translateZ(-340px) scale(0.68) rotateY(${direction * -20}deg)`,
+        transform: `translateX(${direction * 250}px) translateZ(-260px) scale(0.62) rotateY(${direction * -16}deg)`,
         zIndex: 1
       };
     } else {
       return {
         opacity: 0,
-        transform: "translateX(0) translateZ(-420px) scale(0.58)",
+        transform: "translateX(0) translateZ(-320px) scale(0.52)",
         zIndex: 0
       };
     }
@@ -178,7 +178,7 @@ const Sobre = () => {
     >
       <article className="bg-[#fbfafc] text-[#262033]">
         {/* Hero Section */}
-        <section className="relative py-20 md:py-24">
+        <section className="relative py-24 md:py-28">
           <div
             aria-hidden="true"
             className="absolute inset-0"
@@ -192,7 +192,7 @@ const Sobre = () => {
 
           <div className="mx-auto w-full max-w-[1180px] px-5 sm:px-6 lg:px-8 relative">
             {/* Title */}
-            <header className="text-center mb-12 md:mb-16">
+            <header className="text-center mb-14 md:mb-18">
               <h2 className="text-balance text-4xl font-semibold leading-[1.06] text-[#262033] md:text-5xl lg:text-6xl">
                 Sobre a Clínica Crescer
               </h2>
@@ -202,7 +202,7 @@ const Sobre = () => {
             </header>
 
             {/* Carousel - reduced size */}
-            <div className="relative h-[320px] lg:h-[380px]">
+            <div className="relative h-[256px] lg:h-[304px]">
               <div
                 ref={containerRef}
                 className="relative h-full w-full"
@@ -240,8 +240,8 @@ const Sobre = () => {
                       >
                         <div
                           className={cn(
-                            "w-[75%] max-w-[340px] rounded-[28px] overflow-hidden shadow-[0_24px 70px_rgba(62,46,89,0.14)]",
-                            isActive ? "shadow-[0_32px 88px_rgba(62,46,89,0.18)]" : "shadow-[0_18px 56px_rgba(62,46,89,0.10)]"
+                            "w-[55%] max-w-[270px] rounded-[24px] overflow-hidden shadow-[0_16px 52px_rgba(62,46,89,0.12)]",
+                            isActive ? "shadow-[0_20px 64px_rgba(62,46,89,0.15)]" : "shadow-[0_12px 40px_rgba(62,46,89,0.08)]"
                           )}
                         >
                           <img
@@ -257,8 +257,8 @@ const Sobre = () => {
                             className={cn(
                               "pointer-events-none absolute inset-0",
                               isActive
-                                ? "bg-gradient-to-tr from-[#262033]/6 via-transparent to-[#fff3c7]/5"
-                                : "bg-gradient-to-br from-white/10 to-transparent"
+                                ? "bg-gradient-to-tr from-[#262033]/5 via-transparent to-[#fff3c7]/4"
+                                : "bg-gradient-to-br from-white/8 to-transparent"
                             )}
                           />
                         </div>
@@ -272,14 +272,14 @@ const Sobre = () => {
                   <>
                     <button
                       onClick={goToPrev}
-                      className="absolute left-0 top-1/2 -translate-y-1/2 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-[#5b3d86] shadow-md transition-all hover:bg-white hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#8d63c7] focus:ring-offset-2"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 z-40 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-[#5b3d86] shadow-sm transition-all hover:bg-white hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#8d63c7] focus:ring-offset-2"
                       aria-label="Imagem anterior"
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </button>
                     <button
                       onClick={goToNext}
-                      className="absolute right-0 top-1/2 -translate-y-1/2 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-[#5b3d86] shadow-md transition-all hover:bg-white hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#8d63c7] focus:ring-offset-2"
+                      className="absolute right-0 top-1/2 -translate-y-1/2 z-40 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-[#5b3d86] shadow-sm transition-all hover:bg-white hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#8d63c7] focus:ring-offset-2"
                       aria-label="Próxima imagem"
                     >
                       <ChevronRight className="h-4 w-4" />
@@ -294,10 +294,10 @@ const Sobre = () => {
                       key={index}
                       onClick={() => goToSlide(index)}
                       className={cn(
-                        "h-2 rounded-full transition-all duration-300",
+                        "h-1.5 rounded-full transition-all duration-300",
                         index === currentIndex
-                          ? "w-5 bg-[#5b3d86]"
-                          : "w-2 bg-white/60 hover:bg-white/80"
+                          ? "w-4 bg-[#5b3d86]"
+                          : "w-1.5 bg-white/60 hover:bg-white/80"
                       )}
                       aria-label={`Ir para imagem ${index + 1}`}
                       aria-current={index === currentIndex ? "true" : "false"}
