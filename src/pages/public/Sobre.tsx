@@ -159,7 +159,7 @@ const Sobre = () => {
       ]}
     >
       <article className="bg-[#fbfafc] text-[#262033]">
-        <section className="relative overflow-hidden bg-[#fbfafc] pb-16 pt-16 md:pb-24 md:pt-20 -mt-2 md:-mt-4">
+        <section className="relative overflow-visible bg-[#fbfafc] pb-16 pt-16 md:pb-24 md:pt-20 -mt-2 md:-mt-4">
           <div
             aria-hidden="true"
             className="absolute inset-0 opacity-[0.26] mix-blend-multiply"
@@ -189,7 +189,7 @@ const Sobre = () => {
               </p>
             </header>
 
-            <div className="relative min-h-[400px] lg:min-h-[480px] mt-6 lg:mt-8">
+            <div className="relative min-h-[400px] lg:min-h-[480px] mt-6 lg:mt-8 -mb-8 lg:-mb-12">
               <div
                 ref={containerRef}
                 className="relative h-full w-full"
