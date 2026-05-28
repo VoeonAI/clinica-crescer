@@ -14,6 +14,7 @@ const assets = {
   textureYellow: "backgrounds/textura-amarela.png",
   patternPurple: "patterns/pattern-roxo.png",
   patternWhite: "patterns/pattern-branco.png",
+  childrenPNG: "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/site-images/ambiente-unidades/criancas-png.png",
 };
 
 const faqs = [
@@ -122,8 +123,21 @@ const PrecisaDeAjuda = () => {
           />
           <div aria-hidden="true" className="absolute -right-24 top-16 h-80 w-80 rounded-full bg-[#ffd96f]/35 blur-3xl" />
           <div aria-hidden="true" className="absolute left-[45%] top-20 hidden h-64 w-64 rounded-full bg-[#dff1ff]/60 blur-3xl lg:block" />
+          
+          {/* Children PNG decorative image - right side, above texture */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute right-0 top-0 z-0 hidden h-full w-[40%] lg:block"
+            style={{
+              backgroundImage: `url("${assets.childrenPNG}")`,
+              backgroundPosition: "right top",
+              backgroundRepeat: "no-repeat",
+              backgroundSize: "contain",
+              opacity: 0.85,
+            }}
+          />
 
-          <Container className="relative max-w-4xl">
+          <Container className="relative z-10 max-w-4xl">
             <Badge tone="warm" className="mb-5">
               Orientações para pais
             </Badge>
