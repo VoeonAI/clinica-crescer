@@ -14,7 +14,7 @@ const assets = {
   textureYellow: "backgrounds/textura-amarela.png",
   patternPurple: "patterns/pattern-roxo.png",
   patternWhite: "patterns/pattern-branco.png",
-  heroImage: "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/site-images/ambiente-unidades/criancas-textura-amarela.jpg",
+  heroImage: "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/site-images/ambiente-unidades/vila-crescer.jpg",
 };
 
 const faqs = [
@@ -144,11 +144,11 @@ const PrecisaDeAjuda = () => {
               </div>
             </div>
 
-            {/* Right Column - Single Image */}
+            {/* Right Column - Image */}
             <div className="flex justify-center lg:justify-end">
               <img
                 src={assets.heroImage}
-                alt="Crianças em ambiente acolhedor da Clínica Crescer"
+                alt="Vila Crescer - ambiente acolhedor da Clínica Crescer"
                 className="w-full max-w-[380px] rounded-[32px] shadow-[0_20px 60px_rgba(62,46,89,0.12)] object-cover"
                 loading="eager"
                 fetchPriority="high"
