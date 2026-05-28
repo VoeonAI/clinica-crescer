@@ -113,45 +113,49 @@ const PrecisaDeAjuda = () => {
         <Section className="bg-[#fbfafc] pb-20 pt-20 md:pb-24 md:pt-24" spacing="compact">
           <div
             aria-hidden="true"
-            className="absolute inset-0 opacity-[0.38] mix-blend-multiply"
+            className="absolute inset-0 opacity-[0.76] mix-blend-multiply"
             style={{
               backgroundImage: `linear-gradient(135deg, rgba(255,255,255,0.58), rgba(255,243,199,0.28)), url("${siteImageUrl(assets.textureYellow)}")`,
               backgroundPosition: "center, center top",
               backgroundRepeat: "no-repeat, repeat-x",
-              backgroundSize: "cover, 780px auto",
+              backgroundSize: "cover, 880px auto",
             }}
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-gradient-to-b from-transparent via-[#fbfafc]/72 to-[#fbfafc]"
           />
           <div aria-hidden="true" className="absolute -right-24 top-16 h-80 w-80 rounded-full bg-[#ffd96f]/35 blur-3xl" />
           <div aria-hidden="true" className="absolute left-[45%] top-20 hidden h-64 w-64 rounded-full bg-[#dff1ff]/60 blur-3xl lg:block" />
           
-          {/* Children PNG decorative image - right side, above texture */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute right-0 top-0 z-0 hidden h-full w-[40%] lg:block"
-            style={{
-              backgroundImage: `url("${assets.childrenPNG}")`,
-              backgroundPosition: "right top",
-              backgroundRepeat: "no-repeat",
-              backgroundSize: "contain",
-              opacity: 0.85,
-            }}
-          />
-
-          <Container className="relative z-10 max-w-4xl">
-            <Badge tone="warm" className="mb-5">
-              Orientações para pais
-            </Badge>
-            <h1 className="text-balance text-4xl font-semibold leading-[1.06] text-[#262033] md:text-5xl lg:text-6xl">
-              Como Saber Se Meu Filho Precisa de Ajuda
-            </h1>
-            <p className="mt-6 max-w-3xl text-lg leading-8 text-[#5d546b]">
-              Identifique sinais de alerta no desenvolvimento infantil e saiba quando procurar avaliação profissional. Orientações para pais.
-            </p>
-            
-            <div className="mt-8 rounded-2xl border border-[#eee7f6] bg-white/88 p-6 shadow-[0_14px 45px_rgba(62,46,89,0.08)] backdrop-blur-sm">
-              <p className="text-sm leading-7 text-[#342d3f]">
-                Identificar sinais precocemente pode ajudar a construir caminhos mais claros para o desenvolvimento.
+          <Container className="relative z-10 grid items-center gap-8 lg:grid-cols-[0.92fr_1.08fr]">
+            <div>
+              <Badge tone="warm" className="mb-5">
+                Orientações para pais
+              </Badge>
+              <h1 className="text-balance text-4xl font-semibold leading-[1.06] text-[#262033] md:text-5xl lg:text-6xl">
+                Como Saber Se Meu Filho Precisa de Ajuda
+              </h1>
+              <p className="mt-6 max-w-3xl text-lg leading-8 text-[#5d546b]">
+                Identifique sinais de alerta no desenvolvimento infantil e saiba quando procurar avaliação profissional. Orientações para pais.
               </p>
+              
+              <div className="mt-8 rounded-2xl border border-[#eee7f6] bg-white/88 p-6 shadow-[0_14px_45px_rgba(62,46,89,0.08)] backdrop-blur-sm">
+                <p className="text-sm leading-7 text-[#342d3f]">
+                  Identificar sinais precocemente pode ajudar a construir caminhos mais claros para o desenvolvimento.
+                </p>
+              </div>
+            </div>
+
+            <div className="relative min-h-[260px] sm:min-h-[320px] lg:min-h-[420px]">
+              <div aria-hidden="true" className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#fff3c7]/45 blur-2xl" />
+              <img
+                src={assets.childrenPNG}
+                alt="Crianças da Clínica Crescer"
+                className="relative z-10 mx-auto h-auto w-[92%] max-w-[520px] object-contain motion-safe:animate-[kidsFloat_12000ms_ease-in-out_infinite] lg:ml-auto lg:mr-0 lg:w-full"
+                loading="eager"
+                fetchPriority="high"
+              />
             </div>
           </Container>
         </Section>
