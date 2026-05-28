@@ -14,9 +14,7 @@ const assets = {
   textureYellow: "backgrounds/textura-amarela.png",
   patternPurple: "patterns/pattern-roxo.png",
   patternWhite: "patterns/pattern-branco.png",
-  heroImage: "ambiente-unidades/crianca-vila-crescer.png",
-  hand: "icons/mao-crescer.png",
-  icon: "icons/icone.png",
+  heroImage: "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/site-images/ambiente-unidades/criancas-textura-amarela.jpg",
 };
 
 const faqs = [
@@ -111,7 +109,7 @@ const PrecisaDeAjuda = () => {
       <FAQSchema faqs={faqs} />
 
       <article className="bg-[#fbfafc] text-[#262033]">
-        <Section className="bg-[#fbfafc] pb-14 pt-14 md:pb-20 md:pt-20" spacing="compact">
+        <Section className="bg-[#fbfafc] pb-20 pt-20 md:pb-24 md:pt-24" spacing="compact">
           <div
             aria-hidden="true"
             className="absolute inset-0 opacity-[0.38] mix-blend-multiply"
@@ -125,8 +123,9 @@ const PrecisaDeAjuda = () => {
           <div aria-hidden="true" className="absolute -right-24 top-16 h-80 w-80 rounded-full bg-[#ffd96f]/35 blur-3xl" />
           <div aria-hidden="true" className="absolute left-[45%] top-20 hidden h-64 w-64 rounded-full bg-[#dff1ff]/60 blur-3xl lg:block" />
 
-          <Container className="relative grid gap-12 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
-            <header>
+          <Container className="relative grid gap-12 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+            {/* Left Column */}
+            <div>
               <Badge tone="warm" className="mb-5">
                 Orientações para pais
               </Badge>
@@ -136,37 +135,23 @@ const PrecisaDeAjuda = () => {
               <p className="mt-6 max-w-3xl text-lg leading-8 text-[#5d546b]">
                 Identifique sinais de alerta no desenvolvimento infantil e saiba quando procurar avaliação profissional. Orientações para pais.
               </p>
-            </header>
+              
+              <div className="mt-8 rounded-2xl border border-[#eee7f6] bg-white/88 p-6 shadow-[0_14px 45px_rgba(62,46,89,0.08)] backdrop-blur-sm">
+                <p className="text-sm leading-7 text-[#342d3f]">
+                  Identificar sinais precocemente pode ajudar a construir caminhos mais claros para o desenvolvimento.
+                </p>
+              </div>
+            </div>
 
-            <div className="relative mx-auto min-h-[360px] w-full max-w-[560px] lg:mx-0">
+            {/* Right Column - Single Image */}
+            <div className="flex justify-center lg:justify-end">
               <img
-                src={siteImageUrl(assets.hand)}
-                alt=""
-                aria-hidden="true"
-                className="pointer-events-none absolute -right-8 -top-8 z-20 h-36 w-36 object-contain opacity-24"
-                loading="lazy"
+                src={assets.heroImage}
+                alt="Crianças em ambiente acolhedor da Clínica Crescer"
+                className="w-full max-w-[380px] rounded-[32px] shadow-[0_20px 60px_rgba(62,46,89,0.12)] object-cover"
+                loading="eager"
+                fetchPriority="high"
               />
-              <div className="absolute left-0 top-8 h-[290px] w-[78%] rounded-[44px] bg-[#efe2ff] shadow-[0_22px_70px_rgba(62,46,89,0.08)]" />
-              <div className="absolute right-0 top-0 h-[330px] w-[84%] overflow-hidden rounded-[42px] shadow-[0_30px_90px_rgba(62,46,89,0.16)] transition-transform duration-500 hover:-translate-y-1">
-                <img
-                  src={siteImageUrl(assets.heroImage)}
-                  alt="Criança em ambiente acolhedor da Clínica Crescer"
-                  className="h-full w-full object-cover"
-                  loading="eager"
-                  fetchPriority="high"
-                />
-                <div className="absolute inset-0 bg-gradient-to-tr from-[#262033]/24 via-transparent to-[#fff3c7]/16" />
-              </div>
-              <div className="absolute bottom-0 left-6 rounded-[28px] border border-white/78 bg-white/88 p-5 shadow-[0_22px_70px_rgba(62,46,89,0.12)] backdrop-blur-xl">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#fff3c7] text-[#795716]">
-                    <HeartHandshake className="h-5 w-5" />
-                  </div>
-                  <div className="max-w-[230px] text-sm font-semibold leading-6 text-[#342d3f]">
-                    Sinais persistentes merecem uma escuta cuidadosa.
-                  </div>
-                </div>
-              </div>
             </div>
           </Container>
         </Section>
