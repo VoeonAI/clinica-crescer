@@ -109,6 +109,7 @@ const PrecisaDeAjuda = () => {
       <FAQSchema faqs={faqs} />
 
       <article className="bg-[#fbfafc] text-[#262033]">
+        {/* Hero Section */}
         <Section className="bg-[#fbfafc] pb-20 pt-20 md:pb-24 md:pt-24" spacing="compact">
           <div
             aria-hidden="true"
