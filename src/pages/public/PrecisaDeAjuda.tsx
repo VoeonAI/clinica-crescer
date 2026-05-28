@@ -14,7 +14,6 @@ const assets = {
   textureYellow: "backgrounds/textura-amarela.png",
   patternPurple: "patterns/pattern-roxo.png",
   patternWhite: "patterns/pattern-branco.png",
-  heroImage: "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/site-images/ambiente-unidades/vila-crescer.jpg",
 };
 
 const faqs = [
@@ -124,35 +123,21 @@ const PrecisaDeAjuda = () => {
           <div aria-hidden="true" className="absolute -right-24 top-16 h-80 w-80 rounded-full bg-[#ffd96f]/35 blur-3xl" />
           <div aria-hidden="true" className="absolute left-[45%] top-20 hidden h-64 w-64 rounded-full bg-[#dff1ff]/60 blur-3xl lg:block" />
 
-          <Container className="relative grid gap-12 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-            {/* Left Column */}
-            <div>
-              <Badge tone="warm" className="mb-5">
-                Orientações para pais
-              </Badge>
-              <h1 className="text-balance text-4xl font-semibold leading-[1.06] text-[#262033] md:text-5xl lg:text-6xl">
-                Como Saber Se Meu Filho Precisa de Ajuda
-              </h1>
-              <p className="mt-6 max-w-3xl text-lg leading-8 text-[#5d546b]">
-                Identifique sinais de alerta no desenvolvimento infantil e saiba quando procurar avaliação profissional. Orientações para pais.
+          <Container className="relative max-w-4xl">
+            <Badge tone="warm" className="mb-5">
+              Orientações para pais
+            </Badge>
+            <h1 className="text-balance text-4xl font-semibold leading-[1.06] text-[#262033] md:text-5xl lg:text-6xl">
+              Como Saber Se Meu Filho Precisa de Ajuda
+            </h1>
+            <p className="mt-6 max-w-3xl text-lg leading-8 text-[#5d546b]">
+              Identifique sinais de alerta no desenvolvimento infantil e saiba quando procurar avaliação profissional. Orientações para pais.
+            </p>
+            
+            <div className="mt-8 rounded-2xl border border-[#eee7f6] bg-white/88 p-6 shadow-[0_14px 45px_rgba(62,46,89,0.08)] backdrop-blur-sm">
+              <p className="text-sm leading-7 text-[#342d3f]">
+                Identificar sinais precocemente pode ajudar a construir caminhos mais claros para o desenvolvimento.
               </p>
-              
-              <div className="mt-8 rounded-2xl border border-[#eee7f6] bg-white/88 p-6 shadow-[0_14px 45px_rgba(62,46,89,0.08)] backdrop-blur-sm">
-                <p className="text-sm leading-7 text-[#342d3f]">
-                  Identificar sinais precocemente pode ajudar a construir caminhos mais claros para o desenvolvimento.
-                </p>
-              </div>
-            </div>
-
-            {/* Right Column - Image */}
-            <div className="flex justify-center lg:justify-end">
-              <img
-                src={assets.heroImage}
-                alt="Vila Crescer - ambiente acolhedor da Clínica Crescer"
-                className="w-full max-w-[380px] rounded-[32px] shadow-[0_20px 60px_rgba(62,46,89,0.12)] object-cover"
-                loading="eager"
-                fetchPriority="high"
-              />
             </div>
           </Container>
         </Section>
@@ -169,7 +154,7 @@ const PrecisaDeAjuda = () => {
                   <article
                     key={group.title}
                     className={cn(
-                      "group rounded-[30px] border p-6 shadow-[0_14px_45px_rgba(62,46,89,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_70px_rgba(62,46,89,0.12)]",
+                      "group rounded-[30px] border p-6 shadow-[0_14px 45px_rgba(62,46,89,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_70px_rgba(62,46,89,0.12)]",
                       group.tone,
                     )}
                   >
@@ -213,7 +198,7 @@ const PrecisaDeAjuda = () => {
                   {actionItems.map((item, index) => (
                     <li
                       key={item}
-                      className="rounded-[24px] border border-[#eee7f6] bg-white p-5 shadow-[0_14px_45px_rgba(62,46,89,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_70px_rgba(62,46,89,0.12)]"
+                      className="rounded-[24px] border border-[#eee7f6] bg-white p-5 shadow-[0_14px 45px_rgba(62,46,89,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_70px_rgba(62,46,89,0.12)]"
                     >
                       <span className="mb-4 flex h-9 w-9 items-center justify-center rounded-full bg-[#efe2ff] text-sm font-semibold text-[#5b3d86]">
                         {index + 1}
@@ -233,7 +218,7 @@ const PrecisaDeAjuda = () => {
                 {faqs.map((faq) => (
                   <article
                     key={faq.question}
-                    className="rounded-[24px] border border-[#eee7f6] bg-white p-6 shadow-[0_14px_45px_rgba(62,46,89,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(62,46,89,0.1)]"
+                    className="rounded-[24px] border border-[#eee7f6] bg-white p-6 shadow-[0_14px 45px_rgba(62,46,89,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_55px_rgba(62,46,89,0.1)]"
                   >
                     <h3 className="mb-3 font-semibold text-[#262033]">{faq.question}</h3>
                     <p className="text-sm leading-7 text-muted-foreground">{faq.answer}</p>
