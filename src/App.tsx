@@ -23,6 +23,9 @@ import Adolescentes from "./pages/public/Adolescentes";
 import OrientacaoParental from "./pages/public/OrientacaoParental";
 import Blog from "./pages/public/Blog";
 import BlogPost from "./pages/public/BlogPost";
+import Produtos from "./pages/public/Produtos";
+import ProdutosGamelabs from "./pages/public/ProdutosGamelabs";
+import ProdutosEquipe from "./pages/public/ProdutosEquipe";
 
 // Páginas Admin
 import AdminLogin from "./pages/admin/AdminLogin";
@@ -60,6 +63,9 @@ const App = () => (
                 <Route path="terapia-aba" element={<TerapiaABA />} />
                 <Route path="adolescentes" element={<Adolescentes />} />
                 <Route path="orientacao-parental" element={<OrientacaoParental />} />
+                <Route path="produtos" element={<Produtos />} />
+                <Route path="produtos/gamelabs" element={<ProdutosGamelabs />} />
+                <Route path="produtos/equipe" element={<ProdutosEquipe />} />
                 <Route path="blog" element={<Blog />} />
                 <Route path="blog/:slug" element={<BlogPost />} />
               </Route>

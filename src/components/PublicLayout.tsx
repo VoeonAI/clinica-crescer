@@ -15,6 +15,7 @@ const PublicLayout: React.FC = () => {
     { path: "/como-saber-se-meu-filho-precisa-de-ajuda", label: "Precisa de ajuda?" },
     { path: "/avaliacao-neuropsicologica", label: "Avaliação" },
     { path: "/terapia-aba", label: "Terapia ABA" },
+    { path: "/produtos", label: "Produtos" },
     { path: "/blog", label: "Blog" },
   ];
 
