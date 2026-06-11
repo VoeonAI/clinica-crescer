@@ -8,12 +8,12 @@ export type Product = {
   id: string;
   type: ProductType;
   title: string;
-  description?: string;
-  cover_image?: string;
+  description?: string | null;
+  cover_image?: string | null;
   gallery_images: string[];
-  price?: string;
-  external_url?: string;
-  whatsapp_message?: string;
+  price?: string | null;
+  external_url?: string | null;
+  whatsapp_message?: string | null;
   is_active: boolean;
   display_order: number;
   created_at: string;
