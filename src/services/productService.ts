@@ -4,24 +4,24 @@ const PRODUCTS_BUCKET = 'products';
 
 export type ProductType = 'gamelabs' | 'team';
 
-export type Product = {
+export interface Product {
   id: string;
   type: ProductType;
   title: string;
-  description?: string | null;
-  cover_image?: string | null;
-  gallery_images: string[];
-  price?: string | null;
-  external_url?: string | null;
-  whatsapp_message?: string | null;
+  description: string | null;
+  cover_image: string | null;
+  gallery_images: string[] | null;
+  price: string | null;
+  external_url: string | null;
+  whatsapp_message: string | null;
   is_active: boolean;
   display_order: number;
   created_at: string;
   updated_at: string;
-};
+}
 
 export type CreateProductData = Omit<Product, 'id' | 'created_at' | 'updated_at'>;
-export type UpdateProductData = Partial<<CreateProductData>;
+export type UpdateProductData = Partial<CreateProductData>;
 
 export const productService = {
   async getProducts(): Promise<Product[]> {
