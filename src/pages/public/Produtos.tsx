@@ -41,7 +41,7 @@ const Produtos = () => {
         <Section className="bg-[#fbfafc] pb-16 pt-14 md:pb-20 md:pt-20" spacing="compact">
           <div
             aria-hidden="true"
-            className="absolute inset-0 opacity-[0.28] mix-blend-multiply"
+            className="absolute inset-0 opacity-[0.78] mix-blend-multiply"
             style={{
               backgroundImage: `linear-gradient(135deg, rgba(255,255,255,0.68), rgba(255,243,199,0.28)), url("${siteImageUrl(assets.textureYellow)}")`,
               backgroundPosition: "center, center top",
