@@ -9,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { showSuccess, showError } from "@/utils/toast";
-import { ArrowLeft, Save, Upload, Star, User, Briefcase } from "lucide-react";
+import { ArrowLeft, Save, Star, User, Briefcase } from "lucide-react";
+import ImageCropUpload from "@/components/ImageCropUpload";
 
 const AdminEquipeNew = () => {
   const navigate = useNavigate();
@@ -29,7 +30,6 @@ const AdminEquipeNew = () => {
   });
 
   const [loading, setLoading] = useState(false);
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   useEffect(() => {
     if (isEditing && id) {
@@ -84,19 +84,6 @@ const AdminEquipeNew = () => {
       showError("Erro ao salvar membro");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handlePhotoUpload = async (file: File) => {
-    setUploadingPhoto(true);
-    try {
-      const imageUrl = await staffService.uploadMemberImage(file);
-      setFormData({ ...formData, photo_url: imageUrl });
-      showSuccess("Foto enviada com sucesso!");
-    } catch (error: any) {
-      showError(error.message || "Erro ao enviar foto");
-    } finally {
-      setUploadingPhoto(false);
     }
   };
 
@@ -220,70 +207,26 @@ const AdminEquipeNew = () => {
             <CardTitle>Foto do Membro</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="photo-upload">Upload de Foto</Label>
-              <div className="flex gap-2 mt-2">
-                <Input
-                  id="photo-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    e.preventDefault();
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      handlePhotoUpload(file);
-                    }
-                  }}
-                  className="flex-1"
-                  disabled={uploadingPhoto}
-                />
-                <Button
-                  type="button"
-                  size="sm"
-                  disabled={uploadingPhoto}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById("photo-upload")?.click();
-                  }}
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  {uploadingPhoto ? "Enviando..." : "Enviar"}
-                </Button>
-              </div>
+            <div className="space-y-2">
+              <Label>Upload de Foto</Label>
+              <ImageCropUpload
+                profile="member-photo"
+                existingUrl={formData.photo_url || null}
+                onUploadComplete={(url) => setFormData((prev) => ({ ...prev, photo_url: url }))}
+                onUploadError={(err) => showError(err.message)}
+                buttonText="Selecionar foto"
+                onRemove={() => setFormData((prev) => ({ ...prev, photo_url: "" }))}
+              />
             </div>
             <div>
               <Label htmlFor="photo-url">OU URL da Foto</Label>
               <Input
                 id="photo-url"
                 value={formData.photo_url}
-                onChange={(e) => setFormData({ ...formData, photo_url: e.target.value })}
+                onChange={(e) => setFormData((prev) => ({ ...prev, photo_url: e.target.value }))}
                 placeholder="https://..."
               />
             </div>
-            {formData.photo_url && (
-              <div className="relative">
-                <img
-                  src={formData.photo_url}
-                  alt="Preview da foto"
-                  className="w-48 h-48 object-cover rounded-lg border mx-auto"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  className="absolute top-2 right-2"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setFormData({ ...formData, photo_url: "" });
-                  }}
-                >
-                  Remover
-                </Button>
-              </div>
-            )}
           </CardContent>
         </Card>
 

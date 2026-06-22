@@ -23,7 +23,7 @@ import {
   Youtube
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { blogService } from '@/services/blogService';
+import { imageService } from '@/services/imageService';
 import { showSuccess, showError } from '@/utils/toast';
 
 export type BlockType = 'heading' | 'paragraph' | 'list' | 'image' | 'video';
@@ -408,9 +408,9 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange,placeholder }
 
   const handleImageUpload = async (blockId: string, file: File) => {
     try {
-      const imageUrl = await blogService.uploadBlogImage(file);
-      updateBlock(blockId, { imageUrl });
-      showSuccess('Imagem enviada com sucesso!');
+      const result = await imageService.uploadImage(file, 'blog-content');
+      updateBlock(blockId, { imageUrl: result.url });
+      showSuccess('Imagem enviada e otimizada com sucesso!');
     } catch (error: any) {
       console.error('Erro ao enviar imagem:', error);
       const errorMsg = error.message || 'Erro ao enviar imagem';

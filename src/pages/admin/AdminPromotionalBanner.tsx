@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
-import { Eye, Image, Link2, Megaphone, Save, Type, Upload } from "lucide-react";
+import { Eye, Image, Link2, Megaphone, Save, Type } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,7 @@ import {
 } from "@/services/promotionalBannerService";
 import { siteImageUrl } from "@/styles/theme";
 import { showError, showSuccess } from "@/utils/toast";
+import ImageCropUpload from "@/components/ImageCropUpload";
 
 const initialForm = {
   is_active: false,
@@ -33,7 +34,6 @@ const AdminPromotionalBanner = () => {
   const [formData, setFormData] = useState(initialForm);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     loadBanner();
@@ -56,19 +56,6 @@ const AdminPromotionalBanner = () => {
       showError(getErrorMessage(error, "Erro ao carregar faixa promocional."));
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleImageUpload = async (file: File) => {
-    setUploading(true);
-    try {
-      const imageUrl = await promotionalBannerService.uploadBannerImage(file);
-      setFormData((current) => ({ ...current, image_url: imageUrl, type: "image" }));
-      showSuccess("Imagem enviada com sucesso.");
-    } catch (error) {
-      showError(getErrorMessage(error, "Erro ao enviar imagem."));
-    } finally {
-      setUploading(false);
     }
   };
 
@@ -199,23 +186,17 @@ const AdminPromotionalBanner = () => {
               {formData.type === "image" ? (
                 <>
                   <div className="space-y-2">
-                    <Label htmlFor="banner-upload">Upload imagem</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="banner-upload"
-                        type="file"
-                        accept="image/*"
-                        disabled={uploading}
-                        onChange={(event) => {
-                          const file = event.target.files?.[0];
-                          if (file) handleImageUpload(file);
-                        }}
-                      />
-                      <Button type="button" disabled={uploading} onClick={() => document.getElementById("banner-upload")?.click()}>
-                        <Upload className="mr-2 h-4 w-4" />
-                        {uploading ? "Enviando..." : "Enviar"}
-                      </Button>
-                    </div>
+                    <Label>Upload imagem</Label>
+                    <ImageCropUpload
+                      profile="promotional-banner"
+                      existingUrl={formData.image_url || null}
+                      onUploadComplete={(url) =>
+                        setFormData((current) => ({ ...current, image_url: url, type: "image" }))
+                      }
+                      onUploadError={(err) => showError(err.message)}
+                      buttonText="Selecionar banner"
+                      onRemove={() => setFormData((current) => ({ ...current, image_url: "" }))}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="banner-image-url">URL da imagem</Label>
@@ -273,7 +254,7 @@ const AdminPromotionalBanner = () => {
         </Card>
 
         <div className="mt-6 flex justify-end">
-          <Button type="submit" disabled={saving || uploading}>
+          <Button type="submit" disabled={saving}>
             <Save className="mr-2 h-4 w-4" />
             {saving ? "Salvando..." : "Salvar faixa"}
           </Button>

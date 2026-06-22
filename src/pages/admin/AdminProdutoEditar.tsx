@@ -9,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { showSuccess, showError } from "@/utils/toast";
-import { ArrowLeft, Save, Upload, X } from "lucide-react";
+import { ArrowLeft, Save, X } from "lucide-react";
+import ImageCropUpload from "@/components/ImageCropUpload";
 
 const AdminProdutoEditar = () => {
   const navigate = useNavigate();
@@ -31,8 +32,6 @@ const AdminProdutoEditar = () => {
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [uploadingCover, setUploadingCover] = useState(false);
-  const [uploadingGallery, setUploadingGallery] = useState(false);
 
   const isGamelabs = formData.type === "gamelabs";
 
@@ -93,42 +92,11 @@ const AdminProdutoEditar = () => {
     }
   };
 
-  const handleCoverUpload = async (file: File) => {
-    setUploadingCover(true);
-    try {
-      const imageUrl = await productService.uploadCoverImage(file);
-      setFormData({ ...formData, cover_image: imageUrl });
-      showSuccess("Imagem de capa enviada!");
-    } catch (error: any) {
-      showError(error.message || "Erro ao enviar imagem");
-    } finally {
-      setUploadingCover(false);
-    }
-  };
-
-  const handleGalleryUpload = async (files: FileList) => {
-    if (files.length === 0) return;
-    setUploadingGallery(true);
-    try {
-      const fileArray = Array.from(files);
-      const imageUrls = await productService.uploadGalleryImages(fileArray);
-      setFormData({
-        ...formData,
-        gallery_images: [...formData.gallery_images, ...imageUrls],
-      });
-      showSuccess(`${imageUrls.length} imagem(ns) adicionada(s)`);
-    } catch (error: any) {
-      showError(error.message || "Erro ao enviar imagens");
-    } finally {
-      setUploadingGallery(false);
-    }
-  };
-
   const removeGalleryImage = (index: number) => {
-    setFormData({
-      ...formData,
-      gallery_images: formData.gallery_images.filter((_, i) => i !== index),
-    });
+    setFormData((prev) => ({
+      ...prev,
+      gallery_images: prev.gallery_images.filter((_, i) => i !== index),
+    }));
   };
 
   if (loading) {
@@ -227,56 +195,26 @@ const AdminProdutoEditar = () => {
             <CardTitle>Imagem de Capa</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="cover-upload">Upload de Imagem</Label>
-              <div className="flex gap-2 mt-2">
-                <Input
-                  id="cover-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleCoverUpload(file);
-                  }}
-                  className="flex-1"
-                  disabled={uploadingCover}
-                />
-                <Button type="button" size="sm" disabled={uploadingCover}>
-                  <Upload className="w-4 h-4 mr-2" />
-                  {uploadingCover ? "Enviando..." : "Enviar"}
-                </Button>
-              </div>
+            <div className="space-y-2">
+              <Label>Upload de Imagem</Label>
+              <ImageCropUpload
+                profile="product-cover"
+                existingUrl={formData.cover_image || null}
+                onUploadComplete={(url) => setFormData((prev) => ({ ...prev, cover_image: url }))}
+                onUploadError={(err) => showError(err.message)}
+                buttonText="Selecionar capa"
+                onRemove={() => setFormData((prev) => ({ ...prev, cover_image: "" }))}
+              />
             </div>
             <div>
               <Label htmlFor="cover-url">OU URL da Imagem</Label>
               <Input
                 id="cover-url"
                 value={formData.cover_image}
-                onChange={(e) => setFormData({ ...formData, cover_image: e.target.value })}
+                onChange={(e) => setFormData((prev) => ({ ...prev, cover_image: e.target.value }))}
                 placeholder="https://..."
               />
             </div>
-            {formData.cover_image && (
-              <div className="relative inline-block">
-                <img
-                  src={formData.cover_image}
-                  alt="Preview da capa"
-                  className="w-48 h-48 object-cover rounded-lg border"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  className="absolute top-2 right-2"
-                  onClick={() => setFormData({ ...formData, cover_image: "" })}
-                >
-                  <X className="w-3 h-3" />
-                </Button>
-              </div>
-            )}
           </CardContent>
         </Card>
 
@@ -286,25 +224,23 @@ const AdminProdutoEditar = () => {
               <CardTitle>Galeria de Imagens</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="gallery-upload">Upload de Imagens</Label>
-                <div className="flex gap-2 mt-2">
-                  <Input
-                    id="gallery-upload"
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={(e) => {
-                      if (e.target.files) handleGalleryUpload(e.target.files);
-                    }}
-                    className="flex-1"
-                    disabled={uploadingGallery}
-                  />
-                  <Button type="button" size="sm" disabled={uploadingGallery}>
-                    <Upload className="w-4 h-4 mr-2" />
-                    {uploadingGallery ? "Enviando..." : "Adicionar"}
-                  </Button>
-                </div>
+              <div className="space-y-2">
+                <Label>Adicionar Imagens</Label>
+                <ImageCropUpload
+                  profile="product-gallery"
+                  multiple
+                  onUploadComplete={(url) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      gallery_images: [...prev.gallery_images, url],
+                    }));
+                  }}
+                  onUploadAllComplete={(urls) => {
+                    showSuccess(`${urls.length} imagem(ns) adicionada(s) à galeria`);
+                  }}
+                  onUploadError={(err) => showError(err.message)}
+                  buttonText="Adicionar imagens à galeria"
+                />
               </div>
               {formData.gallery_images.length > 0 && (
                 <div className="grid grid-cols-4 gap-3">
