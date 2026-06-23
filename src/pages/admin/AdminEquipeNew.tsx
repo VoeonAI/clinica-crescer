@@ -74,10 +74,10 @@ const AdminEquipeNew = () => {
 
       if (isEditing && id) {
         await staffService.updateStaffMember(id, memberData);
-        showSuccess("Membro atualizado com sucesso");
+        showSuccess("Integrante atualizado com sucesso");
       } else {
         await staffService.createStaffMember(memberData);
-        showSuccess("Membro criado com sucesso");
+        showSuccess("Integrante criado com sucesso");
       }
       navigate("/admin/equipe");
     } catch (error) {
@@ -95,7 +95,7 @@ const AdminEquipeNew = () => {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <h1 className="text-3xl font-bold">
-            {isEditing ? "Editar Membro" : "Novo Membro"}
+            {isEditing ? "Editar Integrante da Equipe" : "Novo Integrante da Equipe"}
           </h1>
         </div>
       </div>
@@ -150,7 +150,7 @@ const AdminEquipeNew = () => {
 
             <div className="grid md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="member_type">Tipo de Membro *</Label>
+                <Label htmlFor="member_type">Tipo de integrante *</Label>
                 <Select
                   value={formData.member_type}
                   onValueChange={(value: MemberType) => setFormData({ ...formData, member_type: value })}
@@ -161,7 +161,7 @@ const AdminEquipeNew = () => {
                   <SelectContent>
                     <SelectItem value="founder">Idealizadora</SelectItem>
                     <SelectItem value="therapist">Terapeuta</SelectItem>
-                    <SelectItem value="staff">Funcionário</SelectItem>
+                    <SelectItem value="staff">Integrante da Equipe</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -183,7 +183,7 @@ const AdminEquipeNew = () => {
                   onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
                 />
                 <Label htmlFor="active" className="text-sm">
-                  Membro Ativo
+                  Integrante ativo
                 </Label>
               </div>
             </div>
@@ -204,7 +204,7 @@ const AdminEquipeNew = () => {
 
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Foto do Membro</CardTitle>
+            <CardTitle>Foto do integrante</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">

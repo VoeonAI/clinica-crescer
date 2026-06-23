@@ -41,7 +41,7 @@ const AdminEquipe = () => {
   const handleToggleActive = async (member: StaffMember) => {
     try {
       await staffService.updateStaffMember(member.id, { is_active: !member.is_active });
-      showSuccess(member.is_active ? "Membro desativado" : "Membro ativado");
+      showSuccess(member.is_active ? "Integrante desativado" : "Integrante ativado");
       loadStaff();
     } catch (error) {
       showError("Erro ao alterar status");
@@ -51,10 +51,10 @@ const AdminEquipe = () => {
   const handleDelete = async (id: string) => {
     try {
       await staffService.deleteStaffMember(id);
-      showSuccess("Membro excluído com sucesso");
+      showSuccess("Integrante excluído com sucesso");
       loadStaff();
     } catch (error) {
-      showError("Erro ao excluir membro");
+      showError("Erro ao excluir integrante");
     }
   };
 
@@ -68,7 +68,7 @@ const AdminEquipe = () => {
     const labels = {
       founder: "Idealizadora",
       therapist: "Terapeuta",
-      staff: "Funcionário",
+      staff: "Integrante da Equipe",
     };
 
     return (
@@ -100,7 +100,7 @@ const AdminEquipe = () => {
         <h1 className="text-3xl font-bold">Equipe</h1>
         <Button onClick={() => navigate("/admin/equipe/novo")}>
           <Plus className="w-4 h-4 mr-2" />
-          Novo Membro
+          Novo Integrante da Equipe
         </Button>
       </div>
 
@@ -109,9 +109,9 @@ const AdminEquipe = () => {
       ) : staff.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground mb-4">Nenhum membro encontrado</p>
+            <p className="text-muted-foreground mb-4">Nenhum integrante encontrado</p>
             <Button onClick={() => navigate("/admin/equipe/novo")}>
-              Adicionar primeiro membro
+              Adicionar primeiro integrante
             </Button>
           </CardContent>
         </Card>

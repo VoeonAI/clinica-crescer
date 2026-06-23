@@ -176,7 +176,7 @@ const Equipe = () => {
           {staffMembers.length > 0 && (
             <section>
               <h3 className="text-3xl font-bold text-center mb-8 text-primary">
-                Funcionários
+                Equipe de Apoio
               </h3>
               <div className="grid md:grid-cols-4 gap-6">
                 {staffMembers.map((member) => (
