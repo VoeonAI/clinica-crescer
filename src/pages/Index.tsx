@@ -452,7 +452,7 @@ const Index = () => {
           <Container className="grid items-center gap-12 lg:grid-cols-[0.96fr_1.04fr]">
             <div className="relative z-10">
               <Badge tone="warm" className="mb-6">
-                Desenvolvimento infantil com orientação para a vida real
+                Desenvolvimento com orientação para a vida real
               </Badge>
               <Heading
                 level={1}
@@ -631,7 +631,7 @@ const Index = () => {
               <Heading
                 eyebrow="Conheça a Clínica Crescer"
                 title="Conheça a Clínica Crescer"
-                description="Somos uma clínica especializada em desenvolvimento infantil, avaliação neuropsicológica, Terapia ABA e orientação familiar. Nosso trabalho combina ciência, acolhimento e uma visão funcional do desenvolvimento."
+                description="Somos uma clínica especializada em desenvolvimento da criança e o adolescente, avaliação neuropsicológica, Terapia ABA e orientação familiar. Nosso trabalho combina ciência, acolhimento e uma visão funcional do desenvolvimento."
               />
               <div className="mt-8 grid gap-4 sm:grid-cols-2">
                 {[
@@ -837,7 +837,7 @@ const Index = () => {
           <Container className="relative z-10">
             <Heading
               eyebrow="Respostas diretas"
-              title="Desenvolvimento infantil com orientação para a vida real"
+              title="Desenvolvimento para crianças e adolescentes com orientação para a vida real"
               description="Informações claras e baseadas na ciência, para famílias que estão tentando entender o próximo passo com calma, segurança e acolhimento."
               align="center"
               className="mb-12"
