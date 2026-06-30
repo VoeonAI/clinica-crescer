@@ -54,6 +54,11 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
+              {/* Rota secreta de preview da Home */}
+              <Route path="/preview-home" element={<PublicLayout />}>
+                <Route index element={<Index />} />
+              </Route>
+
               {/* Rotas Admin - Sempre ativas */}
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route

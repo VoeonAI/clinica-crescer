@@ -1,4 +1,5 @@
 import { ExternalLink, Facebook, Instagram, MapPin, Phone, Youtube, MessageCircle } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 
 import { SEOHead } from "@/components/SEOHead";
 import { Badge, Button } from "@/components/public";
@@ -38,6 +39,9 @@ const ComingSoon = () => {
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#fbfafc] text-[#262033]">
       <SEOHead title="Em Breve | Clínica Crescer" description="O novo site da Clínica Crescer será lançado em poucos dias." />
+      <Helmet>
+        <meta name="robots" content="noindex,nofollow" />
+      </Helmet>
 
       <div
         className="absolute inset-0 h-full w-full"
