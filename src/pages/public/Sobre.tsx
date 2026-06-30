@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Heart, Lightbulb, Shield, Users, ArrowRight, Star } from "lucide-react";
 
@@ -64,8 +64,15 @@ const Sobre = () => {
     return () => { mounted = false; };
   }, []);
 
-  const founder = staff.find(m => m.member_type === 'founder' || m.is_featured) || staff[0];
-  const visibleTeam = staff.filter(m => m.id !== founder?.id).slice(0, 6);
+  const founder = useMemo(() => staff.find(m => m.member_type === 'founder' || m.is_featured) || staff[0], [staff]);
+  const visibleTeam = useMemo(() => {
+    const team = [...staff.filter(m => m.id !== founder?.id)];
+    for (let i = team.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [team[i], team[j]] = [team[j], team[i]];
+    }
+    return team.slice(0, 6);
+  }, [founder?.id, staff]);
 
   return (
     <PublicPage
