@@ -30,6 +30,21 @@ const Sobre = () => {
       url: siteImageUrl("ambiente-unidades/vila-crescer.jpg"),
       alt: "Vila Crescer",
       rotate: false
+    },
+    {
+      url: "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/site-images/ambiente-unidades/crescerun1a.webp",
+      alt: "Ambiente da Unidade 1 da Clínica Crescer",
+      rotate: false
+    },
+    {
+      url: "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/site-images/ambiente-unidades/crescerun1b.png",
+      alt: "Ambiente da Unidade 1 da Clínica Crescer",
+      rotate: true
+    },
+    {
+      url: "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/site-images/ambiente-unidades/crescerun1c.webp",
+      alt: "Ambiente da Unidade 1 da Clínica Crescer",
+      rotate: false
     }
   ];
 
@@ -86,13 +101,13 @@ const Sobre = () => {
               </p>
             </header>
 
-            {/* Premium Gallery - 3 images */}
+            {/* Premium Gallery - 6 images */}
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {galleryImages.map((image, index) => (
                 <div
                   key={index}
                   className={cn(
-                    "group overflow-hidden rounded-2xl border border-white/40 bg-white shadow-[0_12px 40px_rgba(62,46,89,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px 60px_rgba(62,46,89,0.12)]",
+                    "group overflow-hidden rounded-2xl border border-white/40 bg-white shadow-[0_12px_40px_rgba(62,46,89,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(62,46,89,0.12)]",
                     image.rotate && "lg:rotate-2 lg:hover:rotate-0"
                   )}
                 >
@@ -100,7 +115,7 @@ const Sobre = () => {
                     src={image.url}
                     alt={image.alt}
                     className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                    loading="eager"
+                    loading="lazy"
                   />
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-[#262033]/4 via-transparent to-[#fff3c7]/3" />
                 </div>
@@ -328,7 +343,7 @@ const Sobre = () => {
               </div>
 
               {founder && (
-                <div className="mb-10 rounded-[28px] border border-[#eee7f6] bg-white p-6 shadow-[0_14px 45px_rgba(62,46,89,0.08)] sm:p-8">
+                <div className="mb-10 rounded-[28px] border border-[#eee7f6] bg-white p-6 shadow-[0_14px_45px_rgba(62,46,89,0.08)] sm:p-8">
                   <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
                     <div className="shrink-0">
                       {founder.photo_url ? (
@@ -375,7 +390,7 @@ const Sobre = () => {
                     <div
                       key={member.id}
                       className={cn(
-                        "group overflow-hidden rounded-[22px] border border-[#eee7f6] bg-white shadow-[0_14px 45px_rgba(62,46,89,0.08)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_22px 64px_rgba(62,46,89,0.12)]",
+                        "group overflow-hidden rounded-[22px] border border-[#eee7f6] bg-white shadow-[0_14px_45px_rgba(62,46,89,0.08)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_22px_64px_rgba(62,46,89,0.12)]",
                         index === 1 && "lg:translate-y-6"
                       )}
                     >
