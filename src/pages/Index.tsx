@@ -631,7 +631,7 @@ const Index = () => {
               <Heading
                 eyebrow="Conheça a Clínica Crescer"
                 title="Conheça a Clínica Crescer"
-                description="Somos uma clínica especializada em desenvolvimento da criança e o adolescente, avaliação neuropsicológica, Terapia ABA e orientação familiar. Nosso trabalho combina ciência, acolhimento e uma visão funcional do desenvolvimento."
+                description="Somos uma clínica especializada em desenvolvimento da criança e do adolescente, avaliação neuropsicológica, Terapia ABA e orientação familiar. Nosso trabalho combina ciência, acolhimento e uma visão funcional do desenvolvimento."
               />
               <div className="mt-8 grid gap-4 sm:grid-cols-2">
                 {[

@@ -3,10 +3,18 @@ import { staffService, StaffMember } from "@/services/staffService";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Star } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 const Equipe = () => {
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedMember, setSelectedMember] = useState<StaffMember | null>(null);
 
   useEffect(() => {
     loadStaff();
@@ -74,7 +82,13 @@ const Equipe = () => {
                 </div>
               </div>
               
-              <div className="bg-gradient-to-br from-primary/5 to-purple-50 rounded-2xl p-8 md:p-12 border-2 border-primary/20">
+              <div 
+                className="bg-gradient-to-br from-primary/5 to-purple-50 rounded-2xl p-8 md:p-12 border-2 border-primary/20 cursor-pointer transition-shadow hover:shadow-lg"
+                onClick={() => setSelectedMember(founder)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && setSelectedMember(founder)}
+              >
                 <div className="grid md:grid-cols-2 gap-8 items-center">
                   <div className="flex justify-center">
                     {founder.photo_url ? (
@@ -110,10 +124,13 @@ const Equipe = () => {
                     )}
                     
                     {founder.bio && (
-                      <p className="text-lg text-muted-foreground leading-relaxed">
+                      <p className="text-lg text-muted-foreground leading-relaxed line-clamp-4">
                         {founder.bio}
                       </p>
                     )}
+                    <button className="mt-4 text-sm font-semibold text-primary hover:underline">
+                      Conhecer profissional
+                    </button>
                   </div>
                 </div>
               </div>
@@ -130,9 +147,13 @@ const Equipe = () => {
                 {therapists.map((member) => (
                   <div
                     key={member.id}
-                    className="border rounded-xl p-6 hover:shadow-xl transition-all hover:-translate-y-1 bg-white"
+                    className="border rounded-xl p-6 hover:shadow-xl transition-all hover:-translate-y-1 bg-white cursor-pointer flex flex-col"
+                    onClick={() => setSelectedMember(member)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => e.key === 'Enter' && setSelectedMember(member)}
                   >
-                    <div className="flex flex-col items-center text-center mb-6">
+                    <div className="flex flex-col items-center text-center mb-6 flex-grow">
                       {member.photo_url ? (
                         <img
                           src={member.photo_url}
@@ -166,6 +187,9 @@ const Equipe = () => {
                         {member.bio}
                       </p>
                     )}
+                    <button className="mt-4 text-xs font-semibold text-primary hover:underline w-full text-center">
+                      Conhecer profissional
+                    </button>
                   </div>
                 ))}
               </div>
@@ -182,9 +206,13 @@ const Equipe = () => {
                 {staffMembers.map((member) => (
                   <div
                     key={member.id}
-                    className="border rounded-lg p-4 hover:shadow-lg transition-shadow bg-white"
+                    className="border rounded-lg p-4 hover:shadow-lg transition-shadow bg-white cursor-pointer flex flex-col"
+                    onClick={() => setSelectedMember(member)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => e.key === 'Enter' && setSelectedMember(member)}
                   >
-                    <div className="flex flex-col items-center text-center">
+                    <div className="flex flex-col items-center text-center flex-grow">
                       {member.photo_url ? (
                         <img
                           src={member.photo_url}
@@ -206,6 +234,9 @@ const Equipe = () => {
                         </p>
                       )}
                     </div>
+                    <button className="mt-3 text-xs font-semibold text-primary hover:underline w-full text-center">
+                      Conhecer profissional
+                    </button>
                   </div>
                 ))}
               </div>
@@ -213,6 +244,61 @@ const Equipe = () => {
           )}
         </div>
       )}
+
+      {/* Professional Details Modal */}
+      <Dialog open={!!selectedMember} onOpenChange={(open) => !open && setSelectedMember(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          {selectedMember && (
+            <div className="flex flex-col items-center gap-6 py-4">
+              {selectedMember.photo_url ? (
+                <img
+                  src={selectedMember.photo_url}
+                  alt={selectedMember.name}
+                  className="w-32 h-32 md:w-48 md:h-48 rounded-full object-cover shadow-lg border-4 border-background"
+                />
+              ) : (
+                <div className="w-32 h-32 md:w-48 md:h-48 rounded-full bg-muted flex items-center justify-center shadow-lg border-4 border-background">
+                  <span className="text-5xl text-muted-foreground font-semibold">
+                    {selectedMember.name.charAt(0)}
+                  </span>
+                </div>
+              )}
+              
+              <DialogHeader className="text-center space-y-2">
+                <DialogTitle className="text-2xl md:text-3xl font-bold text-primary">
+                  {selectedMember.name}
+                </DialogTitle>
+                {selectedMember.role_title && (
+                  <DialogDescription className="text-base text-primary font-medium">
+                    {selectedMember.role_title}
+                  </DialogDescription>
+                )}
+              </DialogHeader>
+
+              {selectedMember.specialties && selectedMember.specialties.length > 0 && (
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {selectedMember.specialties.map((spec, i) => (
+                    <span
+                      key={i}
+                      className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium"
+                    >
+                      {spec}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {selectedMember.bio && (
+                <div className="text-center max-w-prose">
+                  <p className="text-muted-foreground whitespace-pre-line leading-relaxed">
+                    {selectedMember.bio}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </PublicPage>
   );
 };
