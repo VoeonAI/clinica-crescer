@@ -42,10 +42,10 @@ const ComingSoon = () => {
       <div
         className="absolute inset-0 h-full w-full"
         style={{
-          backgroundImage: `url("${siteImageUrl(assets.textureYellow)}")`,
-          backgroundSize: "cover",
-          backgroundPosition: "center top",
-          backgroundRepeat: "repeat-x",
+          backgroundImage: `linear-gradient(to bottom, rgba(255,255,255,0.55), rgba(255,255,255,0.45)), url("${siteImageUrl(assets.textureYellow)}")`,
+          backgroundSize: "cover, cover",
+          backgroundPosition: "center top, center top",
+          backgroundRepeat: "repeat-x, repeat-x",
         }}
       />
 
@@ -80,6 +80,13 @@ const ComingSoon = () => {
           <p className="mx-auto mb-6 max-w-md text-base leading-8 text-[#5d546b] lg:mx-0">
             Enquanto finalizamos os últimos detalhes, nossa equipe continua pronta para acolher crianças, adolescentes e suas famílias.
           </p>
+
+          {/* Mobile Image */}
+          <img
+            src={assets.childrenPNG}
+            alt="Crianças da Clínica Crescer"
+            className="mx-auto mb-8 w-full max-w-[300px] object-contain motion-safe:animate-[kidsFloat_12000ms_ease-in-out_infinite] lg:hidden"
+          />
 
           <div className="mx-auto mb-8 max-w-md rounded-2xl bg-white/60 p-4 backdrop-blur-sm lg:mx-0">
             <p className="mb-1 font-semibold text-[#5b3d86]">Intervenção Comportamental para dentro e fora da clínica.</p>
@@ -121,6 +128,7 @@ const ComingSoon = () => {
           </div>
         </div>
 
+        {/* Desktop Image */}
         <div className="relative hidden h-full min-h-[400px] lg:block">
           <img
             src={assets.childrenPNG}
