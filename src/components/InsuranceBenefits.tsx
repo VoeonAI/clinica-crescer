@@ -5,7 +5,7 @@ import { Button, Card, Container, Heading, Section } from "@/components/public";
 const WHATSAPP_BASE_URL = "https://wa.me/5511910163007";
 
 const healthInsuranceLogos = [
-  { src: "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/site-images/planos/Logo-Climed.png", alt: "Climéd", maxWidth: "85%", maxHeight: "90%" },
+  { src: "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/site-images/planos/Logo-Climed.png", alt: "Climéd", maxWidth: "98%", maxHeight: "100%" },
 ];
 
 const santherLogo = {
