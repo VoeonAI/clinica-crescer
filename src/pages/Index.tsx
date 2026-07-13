@@ -18,6 +18,7 @@ import {
 import { SEOHead } from "@/components/SEOHead";
 import { FAQSchema, MedicalClinicSchema } from "@/components/Schemas";
 import { PromotionalBanner } from "@/components/public/PromotionalBanner";
+import { InsuranceBenefits } from "@/components/InsuranceBenefits";
 import {
   Badge,
   Button,
@@ -1072,6 +1073,8 @@ const Index = () => {
             </div>
           </Container>
         </Section>
+
+        <InsuranceBenefits />
 
         <Section tone="lilac" spacing="compact">
           <div
