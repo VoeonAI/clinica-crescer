@@ -15,6 +15,17 @@ const assets = {
 
 const WHATSAPP_URL = "https://wa.me/5511910163007?text=Ol%C3%A1%2C%20estava%20no%20site%20e%20gostaria%20de%20saber%20mais.";
 
+const certifications = [
+  {
+    src: "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/site-images/selos/ibesselo.jpeg",
+    alt: "Certificação IBES",
+  },
+  {
+    src: "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/site-images/selos/QABA.png",
+    alt: "Certificação QABA",
+  },
+];
+
 const units = [
   {
     name: "Clínica Crescer Crianças",
@@ -106,6 +117,27 @@ const ComingSoon = () => {
                 Falar pelo WhatsApp
               </a>
             </Button>
+          </div>
+
+          {/* Certificações */}
+          <div className="mx-auto mt-8 max-w-md rounded-2xl bg-white/60 p-5 backdrop-blur-sm lg:mx-0">
+            <h2 className="text-center text-xs font-semibold uppercase tracking-[0.16em] text-[#8d63c7]">
+              Certificações
+            </h2>
+            <p className="mx-auto mt-3 max-w-sm text-center text-sm leading-6 text-[#5d546b]">
+              Atendimento baseado em ciência, desenvolvimento contínuo e compromisso com a qualidade.
+            </p>
+            <div className="mt-4 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6">
+              {certifications.map((cert) => (
+                <img
+                  key={cert.alt}
+                  src={cert.src}
+                  alt={cert.alt}
+                  className="h-16 w-auto max-w-[140px] object-contain transition-transform duration-300 hover:scale-[1.03] sm:h-20"
+                  loading="lazy"
+                />
+              ))}
+            </div>
           </div>
 
           <div className="mt-8 flex flex-wrap justify-center gap-x-5 gap-y-3 lg:justify-start">

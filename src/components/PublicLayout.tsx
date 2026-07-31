@@ -5,6 +5,17 @@ import { SEOHead } from "./SEOHead";
 import { MedicalClinicSchema } from "./Schemas";
 import { siteImageUrl } from "@/styles/theme";
 
+const certifications = [
+  {
+    src: "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/site-images/selos/ibesselo.jpeg",
+    alt: "Certificação IBES",
+  },
+  {
+    src: "https://bnqiezpltfgixkafizzm.supabase.co/storage/v1/object/public/site-images/selos/QABA.png",
+    alt: "Certificação QABA",
+  },
+];
+
 const PublicLayout: React.FC = () => {
   const location = useLocation();
 
@@ -177,6 +188,27 @@ const PublicLayout: React.FC = () => {
                   <span className="ml-auto text-xs font-semibold uppercase tracking-[0.14em] text-[#b0a7bd]">Em breve</span>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Certificações e Reconhecimentos */}
+          <div className="mt-10 rounded-[28px] border border-[#eee7f6] bg-[#fbfafc] p-7 sm:p-8">
+            <h2 className="text-center text-sm font-semibold uppercase tracking-[0.16em] text-[#8d63c7]">
+              Certificações e Reconhecimentos
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-center text-sm leading-7 text-[#5d546b]">
+              A Clínica Crescer atua alinhada às melhores práticas em intervenção comportamental, mantendo compromisso com formação contínua, qualidade técnica e atendimento baseado em evidências.
+            </p>
+            <div className="mt-6 flex flex-col items-center justify-center gap-5 sm:flex-row sm:gap-8">
+              {certifications.map((cert) => (
+                <img
+                  key={cert.alt}
+                  src={cert.src}
+                  alt={cert.alt}
+                  className="h-20 w-auto max-w-[180px] object-contain transition-transform duration-300 hover:scale-[1.03] sm:h-24"
+                  loading="lazy"
+                />
+              ))}
             </div>
           </div>
 
