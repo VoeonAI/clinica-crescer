@@ -157,6 +157,7 @@
 
   .blog-content p {
     @apply mb-4 leading-relaxed text-foreground;
+    white-space: pre-line;
   }
 
   .blog-content ul,

@@ -37,7 +37,7 @@ const Blog = () => {
   return (
     <>
       <SEOHead
-        title="Blog - Traduzindo a Ciência"
+        title="Blog — Traduzindo a Ciência"
         description="Artigos, dicas e orientações sobre desenvolvimento infantil, neuropsicologia e terapia ABA."
       />
       <BreadcrumbSchema items={[{ name: "Home", url: "/" }, { name: "Blog", url: "/blog" }]} />
@@ -59,7 +59,7 @@ const Blog = () => {
               Conteúdos para famílias
             </Badge>
             <h1 className="text-balance text-4xl font-semibold leading-[1.06] text-white md:text-5xl lg:text-6xl">
-              Blog | Traduzindo a Ciência
+              Blog — Traduzindo a Ciência
             </h1>
             <p className="mt-6 max-w-3xl text-lg leading-8 text-white/82">
               Artigos, dicas e orientações sobre desenvolvimento infantil, neuropsicologia e terapia ABA.

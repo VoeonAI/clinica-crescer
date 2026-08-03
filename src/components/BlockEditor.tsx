@@ -765,7 +765,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ value, onChange,placeholder }
             case 'heading':
               return <h2 key={block.id}>{block.content}</h2>;
             case 'paragraph':
-              return <p key={block.id} dangerouslySetInnerHTML={{ __html: block.content }} />;
+              return <p key={block.id} className="whitespace-pre-line" dangerouslySetInnerHTML={{ __html: block.content }} />;
             case 'list':
               const items = block.content.split('\n').filter(item => item.trim());
               const ListTag = block.listType === 'numbered' ? 'ol' : 'ul';

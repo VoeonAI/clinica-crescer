@@ -971,8 +971,8 @@ const Index = () => {
           <Container className="relative z-10">
             <div className="mb-12 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
               <Heading
-                eyebrow="Blog"
-                title="Conteúdos para famílias que querem entender antes de decidir"
+                eyebrow="Conteúdos para famílias"
+                title="Blog — Traduzindo a Ciência"
                 description="Artigos sobre desenvolvimento infantil, sinais de alerta, avaliação neuropsicológica, intervenção e rotina familiar."
               />
               <Button asChild variant="secondary" withArrow>
@@ -989,27 +989,30 @@ const Index = () => {
             ) : latestPosts.length > 0 ? (
               <div className="grid gap-5 md:grid-cols-3">
                 {latestPosts.map((post) => (
-                  <article key={post.id} className="group overflow-hidden rounded-[28px] border border-[#eee7f6] bg-white shadow-[0_14px_45px_rgba(62,46,89,0.08)]">
-                    <Link to={`/blog/${post.slug}`} aria-label={`Ler artigo ${post.title}`}>
+                  <Link
+                    key={post.id}
+                    to={`/blog/${post.slug}`}
+                    className="group block overflow-hidden rounded-[28px] border border-[#eee7f6] bg-white shadow-[0_14px_45px_rgba(62,46,89,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_26px_80px_rgba(62,46,89,0.14)]"
+                    aria-label={`Ler artigo ${post.title}`}
+                  >
+                    <div className="overflow-hidden">
                       <HomeImage
                         src={post.cover_image}
                         alt={post.title}
                         className="aspect-[16/10] min-h-0 transition-transform duration-300 group-hover:scale-[1.03]"
                       />
-                    </Link>
+                    </div>
                     <div className="p-6">
                       <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#8d63c7]">Artigo</p>
-                      <h3 className="text-xl font-semibold leading-snug text-[#262033]">
-                        <Link to={`/blog/${post.slug}`} className="hover:text-[#5b3d86]">
-                          {post.title}
-                        </Link>
+                      <h3 className="line-clamp-2 text-xl font-semibold leading-snug text-[#262033] transition-colors group-hover:text-[#5b3d86]">
+                        {post.title}
                       </h3>
                       {post.excerpt && <p className="mt-4 line-clamp-3 text-sm leading-7 text-[#5d546b]">{post.excerpt}</p>}
-                      <Link to={`/blog/${post.slug}`} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#5b3d86]">
+                      <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#5b3d86]">
                         Ler artigo <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                      </Link>
+                      </span>
                     </div>
-                  </article>
+                  </Link>
                 ))}
               </div>
             ) : (
