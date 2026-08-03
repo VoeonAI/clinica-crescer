@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/contexts/AuthContext";
 import PublicLayout from "@/components/PublicLayout";
@@ -41,7 +41,8 @@ import AdminProdutos from "./pages/admin/AdminProdutos";
 import AdminProdutoNovo from "./pages/admin/AdminProdutoNovo";
 import AdminProdutoEditar from "./pages/admin/AdminProdutoEditar";
 
-export const SITE_LAUNCHED = false;
+// Modo de lançamento: se a variável de ambiente VITE_SITE_LAUNCHED não existir, assume true.
+export const SITE_LAUNCHED = import.meta.env.VITE_SITE_LAUNCHED === "true" || true;
 
 const queryClient = new QueryClient();
 
@@ -82,6 +83,9 @@ const App = () => (
                 <Route path="produtos/novo" element={<AdminProdutoNovo />} />
                 <Route path="produtos/:id/edit" element={<AdminProdutoEditar />} />
               </Route>
+
+              {/* Rota /home redireciona para / */}
+              <Route path="/home" element={<Navigate to="/" replace />} />
 
               {/* Pré-lançamento (Coming Soon) */}
               {!SITE_LAUNCHED && (
