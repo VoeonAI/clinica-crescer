@@ -28,6 +28,7 @@ const PublicLayout: React.FC = () => {
     { path: "/terapia-aba", label: "Terapia ABA" },
     { path: "/produtos", label: "Produtos" },
     { path: "/blog", label: "Blog" },
+    { href: "https://crescer-ensino.my.canva.site", label: "Ensino" },
   ];
 
   const currentPath = location.pathname;
@@ -70,15 +71,27 @@ const PublicLayout: React.FC = () => {
 
             <ul className="hidden items-center gap-5 lg:flex">
               {navItems.map((item) => (
-                <li key={item.path}>
-                  <Link
-                    to={item.path}
-                    className={`text-sm font-medium transition-colors hover:text-[#5b3d86] ${
-                      currentPath === item.path ? "text-[#5b3d86]" : "text-[#5d546b]"
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
+                <li key={item.label}>
+                  {item.href ? (
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm font-medium text-[#5d546b] transition-colors hover:text-[#5b3d86]"
+                    >
+                      {item.label}
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  ) : (
+                    <Link
+                      to={item.path as string}
+                      className={`text-sm font-medium transition-colors hover:text-[#5b3d86] ${
+                        currentPath === item.path ? "text-[#5b3d86]" : "text-[#5d546b]"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
