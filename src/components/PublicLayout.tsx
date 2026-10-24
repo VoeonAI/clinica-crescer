@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { ExternalLink, Facebook, Instagram, MapPin, Music2, Phone, Youtube } from "lucide-react";
+import { ExternalLink, Facebook, Instagram, MapPin, Menu, Music2, Phone, Youtube } from "lucide-react";
 import { SEOHead } from "./SEOHead";
 import { MedicalClinicSchema } from "./Schemas";
 import { siteImageUrl } from "@/styles/theme";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const certifications = [
   {
@@ -18,6 +19,7 @@ const certifications = [
 
 const PublicLayout: React.FC = () => {
   const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const navItems = [
     { path: "/", label: "Início" },
@@ -103,9 +105,77 @@ const PublicLayout: React.FC = () => {
               >
                 Preciso de ajuda
               </Link>
-              <Link to="/admin/login" className="text-xs font-medium text-[#8b8198] transition hover:text-[#5b3d86]">
+              <Link to="/admin/login" className="hidden text-xs font-medium text-[#8b8198] transition hover:text-[#5b3d86] lg:inline-block">
                 Admin
               </Link>
+
+              {/* Botão hambúrguer — visível apenas abaixo de lg */}
+              <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Abrir menu"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#eee7f6] bg-white text-[#5b3d86] shadow-sm transition hover:bg-[#f6f1fc] lg:hidden"
+                  >
+                    <Menu className="h-5 w-5" />
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[320px] border-l border-[#eee7f6] bg-white p-0">
+                  <div className="flex items-center justify-between border-b border-[#eee7f6] px-6 py-5">
+                    <img
+                      src={logoHorizontal}
+                      alt="Clínica Crescer"
+                      className="h-10 w-auto max-w-[180px] object-contain"
+                    />
+                  </div>
+                  <nav className="px-4 py-4" aria-label="Navegação mobile">
+                    <ul className="space-y-1">
+                      {navItems.map((item) => (
+                        <li key={item.label}>
+                          {item.href ? (
+                            <a
+                              href={item.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={() => setMobileOpen(false)}
+                              className="flex items-center justify-between gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-[#5d546b] transition hover:bg-[#f6f1fc] hover:text-[#5b3d86]"
+                            >
+                              {item.label}
+                              <ExternalLink className="h-3.5 w-3.5 text-[#b0a7bd]" />
+                            </a>
+                          ) : (
+                            <Link
+                              to={item.path as string}
+                              onClick={() => setMobileOpen(false)}
+                              className={`block rounded-2xl px-4 py-3 text-sm font-medium transition hover:bg-[#f6f1fc] ${
+                                currentPath === item.path ? "bg-[#f6f1fc] text-[#5b3d86]" : "text-[#5d546b] hover:text-[#5b3d86]"
+                              }`}
+                            >
+                              {item.label}
+                            </Link>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </nav>
+                  <div className="border-t border-[#eee7f6] px-4 py-4">
+                    <Link
+                      to="/como-saber-se-meu-filho-precisa-de-ajuda"
+                      onClick={() => setMobileOpen(false)}
+                      className="block w-full rounded-full bg-[#5b3d86] px-5 py-3 text-center text-sm font-semibold text-white shadow-[0_14px_35px_rgba(91,61,134,0.18)] transition hover:bg-[#4d3175]"
+                    >
+                      Preciso de ajuda
+                    </Link>
+                    <Link
+                      to="/admin/login"
+                      onClick={() => setMobileOpen(false)}
+                      className="mt-3 block w-full rounded-full border border-[#eee7f6] px-5 py-3 text-center text-xs font-medium text-[#8b8198] transition hover:text-[#5b3d86]"
+                    >
+                      Área administrativa
+                    </Link>
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
           </nav>
         </div>
