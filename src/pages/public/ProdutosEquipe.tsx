@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MessageCircle, Users } from "lucide-react";
+import { MessageCircle, ShoppingCart, Users } from "lucide-react";
 
 import { BreadcrumbSchema } from "@/components/Schemas";
 import { SEOHead } from "@/components/SEOHead";
@@ -145,14 +145,24 @@ const ProdutosEquipe = () => {
                           )}
                         </div>
                         {product.description && (
-                          <p className="mt-4 text-sm leading-7 text-[#5d546b]">{product.description}</p>
+                          <p className="mt-4 whitespace-pre-line text-sm leading-7 text-[#5d546b]">{product.description}</p>
                         )}
-                        <Button asChild className="mt-6" size="sm">
-                          <a href={buildWhatsAppUrl(product.title)} target="_blank" rel="noreferrer">
-                            <MessageCircle className="h-4 w-4" />
-                            Adquirir pelo WhatsApp
-                          </a>
-                        </Button>
+                        <div className="mt-6 flex flex-wrap gap-3">
+                          {product.purchase_url_enabled && product.purchase_url && (
+                            <Button asChild size="sm" className="bg-[#5b3d86] hover:bg-[#4d3175]">
+                              <a href={product.purchase_url} target="_blank" rel="noreferrer">
+                                <ShoppingCart className="h-4 w-4" />
+                                Adquira agora
+                              </a>
+                            </Button>
+                          )}
+                          <Button asChild size="sm" variant="outline">
+                            <a href={buildWhatsAppUrl(product.title)} target="_blank" rel="noreferrer">
+                              <MessageCircle className="h-4 w-4" />
+                              {product.purchase_url_enabled && product.purchase_url ? "WhatsApp" : "Adquirir pelo WhatsApp"}
+                            </a>
+                          </Button>
+                        </div>
                       </div>
                     </article>
                   );

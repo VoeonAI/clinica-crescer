@@ -26,6 +26,8 @@ const AdminProdutoEditar = () => {
     price: "",
     external_url: "",
     whatsapp_message: "",
+    purchase_url: "",
+    purchase_url_enabled: false,
     is_active: true,
     display_order: 0,
   });
@@ -56,6 +58,8 @@ const AdminProdutoEditar = () => {
           price: data.price || "",
           external_url: data.external_url || "",
           whatsapp_message: data.whatsapp_message || "",
+          purchase_url: data.purchase_url || "",
+          purchase_url_enabled: data.purchase_url_enabled ?? false,
           is_active: data.is_active,
           display_order: data.display_order,
         });
@@ -80,6 +84,8 @@ const AdminProdutoEditar = () => {
         price: isGamelabs ? undefined : formData.price,
         whatsapp_message: isGamelabs ? undefined : formData.whatsapp_message,
         external_url: isGamelabs ? formData.external_url : undefined,
+        purchase_url: isGamelabs ? undefined : formData.purchase_url,
+        purchase_url_enabled: isGamelabs ? false : formData.purchase_url_enabled,
       };
 
       await productService.updateProduct(id, productData);
@@ -314,6 +320,47 @@ const AdminProdutoEditar = () => {
                 />
               </div>
             </CardContent>
+          </Card>
+        )}
+
+        {!isGamelabs && (
+          <Card className="mb-6">
+            <CardHeader>
+              <div className="flex items-center justify-between gap-4">
+                <CardTitle>Compra via Link</CardTitle>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="purchase_url_enabled"
+                    checked={formData.purchase_url_enabled}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, purchase_url_enabled: checked })
+                    }
+                  />
+                  <Label htmlFor="purchase_url_enabled" className="text-sm">
+                    Ativar
+                  </Label>
+                </div>
+              </div>
+            </CardHeader>
+            {formData.purchase_url_enabled && (
+              <CardContent>
+                <div className="space-y-2">
+                  <Label htmlFor="purchase_url">URL de Compra</Label>
+                  <Input
+                    id="purchase_url"
+                    type="url"
+                    value={formData.purchase_url}
+                    onChange={(e) =>
+                      setFormData({ ...formData, purchase_url: e.target.value })
+                    }
+                    placeholder="https://..."
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Quando ativado, um botão "Adquira agora" será exibido no produto junto ao WhatsApp.
+                  </p>
+                </div>
+              </CardContent>
+            )}
           </Card>
         )}
 

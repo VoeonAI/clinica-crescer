@@ -14,6 +14,8 @@ export interface Product {
   price: string | null;
   external_url: string | null;
   whatsapp_message: string | null;
+  purchase_url: string | null;
+  purchase_url_enabled: boolean;
   is_active: boolean;
   display_order: number;
   created_at: string;
