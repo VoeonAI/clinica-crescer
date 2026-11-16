@@ -27,6 +27,7 @@ import BlogPost from "./pages/public/BlogPost";
 import Produtos from "./pages/public/Produtos";
 import ProdutosGamelabs from "./pages/public/ProdutosGamelabs";
 import ProdutosEquipe from "./pages/public/ProdutosEquipe";
+import ProdutoDetalhe from "./pages/public/ProdutoDetalhe";
 
 // Páginas Admin
 import AdminLogin from "./pages/admin/AdminLogin";
@@ -109,6 +110,7 @@ const App = () => (
                     <Route path="produtos" element={<Produtos />} />
                     <Route path="produtos/gamelabs" element={<ProdutosGamelabs />} />
                     <Route path="produtos/equipe" element={<ProdutosEquipe />} />
+                    <Route path="produtos/equipe/:id" element={<ProdutoDetalhe />} />
                     <Route path="blog" element={<Blog />} />
                     <Route path="blog/:slug" element={<BlogPost />} />
                   </Route>

@@ -1,22 +1,18 @@
 import { useEffect, useState } from "react";
-import { MessageCircle, ShoppingCart, Users } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ArrowRight, Users } from "lucide-react";
 
 import { BreadcrumbSchema } from "@/components/Schemas";
 import { SEOHead } from "@/components/SEOHead";
-import { Button, Container, Section } from "@/components/public";
+import { Container, Section } from "@/components/public";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Product, productService } from "@/services/productService";
 import { siteImageUrl } from "@/styles/theme";
-
-const WHATSAPP_BASE_URL = "https://wa.me/5511910163007";
 
 const assets = {
   textureYellow: "backgrounds/textura-amarela.png",
   icon: "icons/icone.png",
 };
-
-const buildWhatsAppUrl = (title: string) =>
-  `${WHATSAPP_BASE_URL}?text=${encodeURIComponent(`Olá, tenho interesse no produto: ${title}`)}`;
 
 const getGalleryImages = (product: Product) => {
   const images = product.gallery_images?.filter(Boolean) || [];
@@ -105,9 +101,10 @@ const ProdutosEquipe = () => {
                   const gallery = getGalleryImages(product);
 
                   return (
-                    <article
+                    <Link
                       key={product.id}
-                      className="group overflow-hidden rounded-[30px] border border-[#eee7f6] bg-white shadow-[0_14px_45px_rgba(62,46,89,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_26px_80px_rgba(62,46,89,0.14)]"
+                      to={`/produtos/equipe/${product.id}`}
+                      className="group block overflow-hidden rounded-[30px] border border-[#eee7f6] bg-white shadow-[0_14px_45px_rgba(62,46,89,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_26px_80px_rgba(62,46,89,0.14)]"
                     >
                       {gallery.length > 0 ? (
                         <div className="grid aspect-[16/10] grid-cols-3 gap-1 overflow-hidden bg-[#f8f2ff]">
@@ -147,24 +144,14 @@ const ProdutosEquipe = () => {
                         {product.description && (
                           <p className="mt-4 whitespace-pre-line text-sm leading-7 text-[#5d546b]">{product.description}</p>
                         )}
-                        <div className="mt-6 flex flex-wrap gap-3">
-                          {product.purchase_url_enabled && product.purchase_url && (
-                            <Button asChild size="sm" className="bg-[#5b3d86] hover:bg-[#4d3175]">
-                              <a href={product.purchase_url} target="_blank" rel="noreferrer">
-                                <ShoppingCart className="h-4 w-4" />
-                                Adquira agora
-                              </a>
-                            </Button>
-                          )}
-                          <Button asChild size="sm" variant="outline">
-                            <a href={buildWhatsAppUrl(product.title)} target="_blank" rel="noreferrer">
-                              <MessageCircle className="h-4 w-4" />
-                              {product.purchase_url_enabled && product.purchase_url ? "WhatsApp" : "Adquirir pelo WhatsApp"}
-                            </a>
-                          </Button>
+                        <div className="mt-6 flex flex-wrap items-center gap-3">
+                          <span className="inline-flex items-center gap-2 rounded-full bg-[#5b3d86] px-5 py-2.5 text-sm font-semibold text-white transition group-hover:bg-[#4d3175]">
+                            Ver detalhes
+                            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+                          </span>
                         </div>
                       </div>
-                    </article>
+                    </Link>
                   );
                 })}
               </div>
